@@ -1,0 +1,34 @@
+[
+  {
+    "id": "dashboard",
+    "title": "Dashboard",
+    "path": "/dashboard",
+    "icon": "Dashboard",
+    "action": "read",
+    "subject": "Dashboard"
+  },
+  {
+    "id": "models",
+    "title": "Model Management",
+    "path": "/models",
+    "icon": "People",
+    "action": "read",
+    "subject": "Model"
+  },
+  {
+    "id": "users",
+    "title": "Users & Roles",
+    "path": "/users",
+    "icon": "Users",
+    "action": "read",
+    "subject": "User"
+  },
+  {
+    "id": "settings",
+    "title": "Settings",
+    "path": "/settings",
+    "icon": "Settings",
+    "action": "manage",
+    "subject": "Settings"
+  }
+]

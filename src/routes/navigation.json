@@ -17,18 +17,35 @@
   },
   {
     "id": "users",
-    "title": "Users & Roles",
+    "title": "Users",
     "path": "/users",
     "icon": "Users",
     "action": "read",
     "subject": "User"
   },
   {
+    "id": "roles",
+    "title": "Roles",
+    "path": "/roles",
+    "icon": "Roles",
+    "action": "read",
+    "subject": "User"
+  },
+  {
     "id": "settings",
     "title": "Settings",
-    "path": "/settings",
+    "path": "/settings/profile",
     "icon": "Settings",
     "action": "manage",
-    "subject": "Settings"
+    "subject": "Settings",
+    "children": [
+      {
+        "id": "profile",
+        "title": "Profile",
+        "path": "/settings/profile",
+        "action": "manage",
+        "subject": "Settings"
+      }
+    ]
   }
 ]

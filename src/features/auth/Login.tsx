@@ -49,8 +49,8 @@ export const Login: React.FC = () => {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1 text-center">
-        <h1 className="text-xl font-bold text-slate-900">Sign In</h1>
-        <p className="text-xs text-slate-500">Enter your credentials to access your account</p>
+        <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Sign In</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400">Enter your credentials to access your account</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
@@ -73,7 +73,7 @@ export const Login: React.FC = () => {
         />
 
         <div className="flex justify-end">
-          <Link to="/forgot-password" className="text-xs font-semibold text-accent-600 hover:text-accent-700 hover:underline">
+          <Link to="/forgot-password" className="text-xs font-semibold text-accent-600 dark:text-accent-400 hover:text-accent-700 dark:hover:text-accent-300 hover:underline">
             Forgot password?
           </Link>
         </div>
@@ -85,28 +85,28 @@ export const Login: React.FC = () => {
 
       {/* Divider */}
       <div className="relative flex py-2 items-center">
-        <div className="flex-grow border-t border-slate-200"></div>
-        <span className="flex-shrink mx-4 text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider">Quick Login</span>
-        <div className="flex-grow border-t border-slate-200"></div>
+        <div className="flex-grow border-t border-slate-200 dark:border-navy-border"></div>
+        <span className="flex-shrink mx-4 text-[10px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Quick Login</span>
+        <div className="flex-grow border-t border-slate-200 dark:border-navy-border"></div>
       </div>
 
       {/* Quick Login Badges */}
       <div className="grid grid-cols-3 gap-2">
         <button
           onClick={() => handleQuickLogin('admin')}
-          className="px-2 py-2 bg-slate-50 hover:bg-accent-50 border border-slate-200 hover:border-accent-300 text-xs font-semibold rounded-lg text-slate-700 hover:text-accent-600 transition-all text-center"
+          className="px-2 py-2 bg-slate-50 hover:bg-accent-50 dark:bg-navy-950 dark:hover:bg-accent-950/20 border border-slate-200 hover:border-accent-300 dark:border-navy-border dark:hover:border-accent-800/40 text-xs font-semibold rounded-lg text-slate-700 hover:text-accent-600 dark:text-slate-300 dark:hover:text-accent-400 transition-all text-center"
         >
           Admin
         </button>
         <button
           onClick={() => handleQuickLogin('editor')}
-          className="px-2 py-2 bg-slate-50 hover:bg-accent-50 border border-slate-200 hover:border-accent-300 text-xs font-semibold rounded-lg text-slate-700 hover:text-accent-600 transition-all text-center"
+          className="px-2 py-2 bg-slate-50 hover:bg-accent-50 dark:bg-navy-950 dark:hover:bg-accent-950/20 border border-slate-200 hover:border-accent-300 dark:border-navy-border dark:hover:border-accent-800/40 text-xs font-semibold rounded-lg text-slate-700 hover:text-accent-600 dark:text-slate-300 dark:hover:text-accent-400 transition-all text-center"
         >
           Editor
         </button>
         <button
           onClick={() => handleQuickLogin('viewer')}
-          className="px-2 py-2 bg-slate-50 hover:bg-accent-50 border border-slate-200 hover:border-accent-300 text-xs font-semibold rounded-lg text-slate-700 hover:text-accent-600 transition-all text-center"
+          className="px-2 py-2 bg-slate-50 hover:bg-accent-50 dark:bg-navy-950 dark:hover:bg-accent-950/20 border border-slate-200 hover:border-accent-300 dark:border-navy-border dark:hover:border-accent-800/40 text-xs font-semibold rounded-lg text-slate-700 hover:text-accent-600 dark:text-slate-300 dark:hover:text-accent-400 transition-all text-center"
         >
           Viewer
         </button>

@@ -18,11 +18,11 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
         <input
           id={id}
           ref={ref}
-          className={`w-full px-3.5 py-2 bg-white border ${
+          className={`w-full px-3.5 py-2 bg-white dark:bg-[#0f1422] border ${
             error 
               ? 'border-red-500 focus:ring-red-500/25 focus:border-red-500' 
-              : 'border-slate-300 focus:ring-accent-500/25 focus:border-accent-500'
-          } rounded-lg text-slate-900 placeholder-slate-400 transition-all duration-200 outline-none focus:ring-4 text-sm`}
+              : 'border-slate-300 dark:border-navy-border focus:ring-accent-500/25 focus:border-accent-500'
+          } rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-200 outline-none focus:ring-4 text-sm`}
           {...props}
         />
         {error ? (

@@ -119,10 +119,10 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
       {/* Portfolio Selection */}
       <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-0.5">
-          <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">
+          <span className="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
             Portfolio Gallery Selection
           </span>
-          <span className="text-[10px] text-slate-400">Select one or more images. The first selected image will be used as the primary avatar.</span>
+          <span className="text-[10px] text-slate-400 dark:text-slate-500">Select one or more images. The first selected image will be used as the primary avatar.</span>
         </div>
 
         <div className="grid grid-cols-5 gap-2 mt-1">
@@ -137,7 +137,7 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
                 className={`relative aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all ${
                   isSelected
                     ? 'border-accent-600 ring-2 ring-accent-500/20 scale-[0.97] shadow-sm'
-                    : 'border-slate-200 hover:border-slate-350'
+                    : 'border-slate-200 dark:border-navy-border hover:border-slate-350 dark:hover:border-slate-700'
                 }`}
               >
                 <img src={url} alt={`Option ${idx + 1}`} className="w-full h-full object-cover" />
@@ -165,7 +165,7 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
         {...register('name')}
       />
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <FormInput
           label="Age"
           id="age"
@@ -327,18 +327,18 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
       </div>
 
       <div className="w-full flex flex-col gap-1.5">
-        <label htmlFor="bio" className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">
+        <label htmlFor="bio" className="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
           Bio / Cover Note
         </label>
         <textarea
           id="bio"
           rows={3}
           placeholder="Write a brief model profile introduction..."
-          className={`w-full px-3.5 py-2.5 bg-white border ${
+          className={`w-full px-3.5 py-2.5 bg-white dark:bg-[#0f1422] border ${
             errors.bio
               ? 'border-red-500 focus:ring-red-500/25 focus:border-red-500'
-              : 'border-slate-300 focus:ring-accent-500/25 focus:border-accent-500'
-          } rounded-lg text-slate-900 placeholder-slate-400 transition-all duration-200 outline-none focus:ring-4 text-xs font-medium`}
+              : 'border-slate-300 dark:border-navy-border focus:ring-accent-500/25 focus:border-accent-500'
+          } rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-200 outline-none focus:ring-4 text-xs font-medium`}
           {...register('bio')}
         />
         {errors.bio && (
@@ -346,7 +346,7 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
         )}
       </div>
 
-      <div className="flex justify-end gap-3 mt-4 border-t border-slate-100 pt-4">
+      <div className="flex justify-end gap-3 mt-4 border-t border-slate-100 dark:border-navy-border/50 pt-4">
         <Button
           type="button"
           variant="secondary"

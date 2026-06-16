@@ -29,8 +29,8 @@ export const ForgotPassword: React.FC = () => {
       {!isSubmitted ? (
         <>
           <div className="flex flex-col gap-1 text-center">
-            <h1 className="text-xl font-bold text-slate-900">Forgot Password?</h1>
-            <p className="text-xs text-slate-500">Enter your email and we'll send you recovery instructions</p>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Forgot Password?</h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Enter your email and we'll send you recovery instructions</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
@@ -50,14 +50,14 @@ export const ForgotPassword: React.FC = () => {
         </>
       ) : (
         <div className="flex flex-col gap-5 text-center items-center py-4">
-          <div className="w-12 h-12 rounded-full bg-green-50 border border-green-200 text-green-600 flex items-center justify-center shadow-sm">
+          <div className="w-12 h-12 rounded-full bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800/40 text-green-600 dark:text-green-400 flex items-center justify-center shadow-sm">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
           <div className="flex flex-col gap-1.5">
-            <h1 className="text-lg font-bold text-slate-900">Instructions Sent</h1>
-            <p className="text-xs text-slate-500">
+            <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100">Instructions Sent</h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Check your inbox. We have sent password reset instructions to your registered email.
             </p>
           </div>
@@ -65,7 +65,7 @@ export const ForgotPassword: React.FC = () => {
       )}
 
       <div className="text-center mt-2">
-        <Link to="/login" className="text-xs font-semibold text-slate-500 hover:text-slate-800 inline-flex items-center gap-1.5 transition-colors">
+        <Link to="/login" className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 inline-flex items-center gap-1.5 transition-colors">
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>

@@ -1,4 +1,4 @@
-export type SystemRole = 'admin' | 'editor' | 'viewer';
+export type SystemRole = string;
 
 export interface SystemUser {
   id: string;
@@ -125,7 +125,16 @@ const initUsersDb = (): SystemUser[] => {
     const updated = parsed.map(u => {
       let changed = false;
       const uUpdated = { ...u };
-      if (!uUpdated.role || !['admin', 'editor', 'viewer'].includes(uUpdated.role)) {
+      const validRoles = (() => {
+        try {
+          const saved = localStorage.getItem('rbc_role_permissions');
+          if (saved) {
+            return Object.keys(JSON.parse(saved));
+          }
+        } catch {}
+        return ['admin', 'editor', 'viewer'];
+      })();
+      if (!uUpdated.role || !validRoles.includes(uUpdated.role)) {
         uUpdated.role = 'viewer';
         changed = true;
       }

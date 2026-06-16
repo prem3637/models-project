@@ -67,13 +67,13 @@ export const SearchDropdown: React.FC<SearchDropdownProps> = ({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center justify-between px-3.5 py-2 bg-white border ${
+        className={`w-full flex items-center justify-between px-3.5 py-2 bg-white dark:bg-[#0f1422] border ${
           error
             ? 'border-red-500 focus:ring-red-500/25 focus:border-red-500'
-            : 'border-slate-300 focus:ring-accent-500/25 focus:border-accent-500'
-        } rounded-lg text-left text-sm text-slate-800 placeholder-slate-400 transition-all duration-200 outline-none focus:ring-4`}
+            : 'border-slate-300 dark:border-navy-border focus:ring-accent-500/25 focus:border-accent-500'
+        } rounded-lg text-left text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-200 outline-none focus:ring-4`}
       >
-        <span className={selectedOption ? 'text-slate-800' : 'text-slate-400'}>
+        <span className={selectedOption ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500'}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <svg
@@ -87,26 +87,26 @@ export const SearchDropdown: React.FC<SearchDropdownProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1.5 top-full bg-white border border-slate-200 rounded-lg shadow-xl shadow-slate-200/60 overflow-hidden flex flex-col max-h-60">
-          <div className="p-2 border-b border-slate-100">
+        <div className="absolute z-50 w-full mt-1.5 top-full bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border rounded-lg shadow-xl shadow-slate-200/60 dark:shadow-none overflow-hidden flex flex-col max-h-60">
+          <div className="p-2 border-b border-slate-100 dark:border-navy-border">
             <input
               type="text"
               ref={searchInputRef}
               placeholder="Search..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 focus:border-accent-600 rounded text-xs text-slate-800 placeholder-slate-400 outline-none transition-colors"
+              className="w-full px-3 py-1.5 bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-border focus:border-accent-600 rounded text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 outline-none transition-colors"
             />
           </div>
-          <div className="overflow-y-auto flex-1 max-h-40 custom-scrollbar bg-white">
+          <div className="overflow-y-auto flex-1 max-h-40 custom-scrollbar bg-white dark:bg-navy-card">
             {filteredOptions.length > 0 ? (
               filteredOptions.map(option => (
                 <button
                   key={option.value}
                   type="button"
                   onClick={() => handleSelect(option.value)}
-                  className={`w-full text-left px-3 py-2 text-xs transition-colors hover:bg-accent-50 hover:text-accent-700 flex items-center justify-between ${
-                    option.value === value ? 'bg-accent-50 text-accent-600 font-medium' : 'text-slate-700'
+                  className={`w-full text-left px-3 py-2 text-xs transition-colors hover:bg-accent-50 dark:hover:bg-slate-800 hover:text-accent-700 dark:hover:text-slate-100 flex items-center justify-between ${
+                    option.value === value ? 'bg-accent-50 dark:bg-slate-850 text-accent-600 dark:text-accent-400 font-medium' : 'text-slate-700 dark:text-slate-300'
                   }`}
                 >
                   <span>{option.label}</span>
@@ -118,7 +118,7 @@ export const SearchDropdown: React.FC<SearchDropdownProps> = ({
                 </button>
               ))
             ) : (
-              <div className="p-3 text-xs text-slate-400 text-center">No options found</div>
+              <div className="p-3 text-xs text-slate-400 text-center dark:text-slate-500">No options found</div>
             )}
           </div>
         </div>

@@ -56,25 +56,25 @@ export const Pagination: React.FC<PaginationProps> = ({
   const btnActive =
     'bg-accent-600 text-white border-accent-600 shadow-sm shadow-accent-500/25';
   const btnIdle =
-    'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300';
+    'bg-white dark:bg-[#0f1422] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-navy-border hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700';
   const btnDisabled =
-    'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed';
+    'bg-slate-50 dark:bg-navy-950 text-slate-300 dark:text-slate-600 border-slate-100 dark:border-navy-border/50 cursor-not-allowed';
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-5 py-3.5 border-t border-slate-100 bg-white">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-5 py-3.5 border-t border-slate-100 dark:border-navy-border bg-white dark:bg-navy-card">
       {/* Left: row info + rows-per-page */}
-      <div className="flex items-center gap-3 text-xs text-slate-500">
+      <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
         <span className="font-medium">
           {totalRows === 0
             ? 'No results'
             : `Showing ${from}–${to} of ${totalRows}`}
         </span>
         <div className="flex items-center gap-1.5">
-          <span className="text-slate-400">Rows:</span>
+          <span className="text-slate-400 dark:text-slate-500">Rows:</span>
           <select
             value={pageSize}
             onChange={e => onPageSizeChange(Number(e.target.value))}
-            className="h-7 px-1.5 pr-5 text-xs font-bold text-slate-700 border border-slate-200 rounded-lg bg-white focus:outline-none focus:border-accent-500 cursor-pointer"
+            className="h-7 px-1.5 pr-5 text-xs font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-navy-border rounded-lg bg-white dark:bg-[#0f1422] focus:outline-none focus:border-accent-500 cursor-pointer"
           >
             {pageSizeOptions.map(s => (
               <option key={s} value={s}>{s}</option>

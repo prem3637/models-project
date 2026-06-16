@@ -12,7 +12,8 @@ import ModelDashboard from '../features/models/ModelDashboard';
 import ModelList from '../features/models/ModelList';
 import ModelDetails from '../features/models/ModelDetails';
 import UserManagement from '../features/users/UserManagement';
-import Settings from '../features/admin/Settings';
+import RoleConfiguration from '../features/users/RoleConfiguration';
+import Profile from '../features/admin/Profile';
 
 // Private Route Guard
 interface GuardProps {
@@ -123,16 +124,32 @@ export const AppRoutes: React.FC = () => {
         }
       />
       <Route
-        path="/settings"
+        path="/roles"
         element={
           <PrivateRoute>
             <DashboardLayout>
-              <PermissionGate action="manage" subject="Settings">
-                <Settings />
+              <PermissionGate action="read" subject="User">
+                <RoleConfiguration />
               </PermissionGate>
             </DashboardLayout>
           </PrivateRoute>
         }
+      />
+      <Route
+        path="/settings/profile"
+        element={
+          <PrivateRoute>
+            <DashboardLayout>
+              <PermissionGate action="manage" subject="Settings">
+                <Profile />
+              </PermissionGate>
+            </DashboardLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={<Navigate to="/settings/profile" replace />}
       />
 
       {/* Redirections */}

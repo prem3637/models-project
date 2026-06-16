@@ -58,16 +58,16 @@ export const NestedDrawer: React.FC<NestedDrawerProps> = ({
 
       {/* Drawer Container */}
       <div
-        className={`fixed inset-y-0 right-0 w-full ${sizes[size]} bg-white border-l border-slate-200 flex flex-col shadow-2xl transition-all duration-300 ease-out transform ${stackOffsetClass}`}
+        className={`fixed inset-y-0 right-0 w-full ${sizes[size]} bg-white dark:bg-navy-card border-l border-slate-200 dark:border-navy-border flex flex-col shadow-2xl transition-all duration-300 ease-out transform ${stackOffsetClass}`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-10">
-          <h3 className="text-base md:text-lg font-bold text-slate-800 uppercase tracking-wide">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-navy-border bg-white/80 dark:bg-navy-card/85 backdrop-blur-md sticky top-0 z-10">
+          <h3 className="text-base md:text-lg font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide">
             {title}
           </h3>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-950 transition-colors"
+            className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-950 dark:hover:text-slate-100 transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -76,7 +76,7 @@ export const NestedDrawer: React.FC<NestedDrawerProps> = ({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-slate-50">
+        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-slate-50 dark:bg-navy-950 text-slate-800 dark:text-slate-200">
           {children}
         </div>
       </div>

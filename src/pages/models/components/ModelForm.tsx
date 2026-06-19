@@ -1,11 +1,11 @@
 import React from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ModelFormSchema, ModelFormData } from './ModelSchema';
-import { useCreateModel, useUpdateModel, useWorldCities } from './modelsHooks';
-import FormInput from '../../components/FormInput';
-import SearchDropdown from '../../components/SearchDropdown';
-import Button from '../../components/Button';
+import { ModelFormSchema, ModelFormData } from '../ModelSchema';
+import { useCreateModel, useUpdateModel, useWorldCities } from '../modelsHooks';
+import FormInput from '../../../components/ui/FormInput';
+import SearchDropdown from '../../../components/ui/SearchDropdown';
+import Button from '../../../components/ui/Button';
 
 const SUGGESTED_IMAGES = [
   'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&h=600&fit=crop',

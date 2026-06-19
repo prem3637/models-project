@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { RootState } from '../../store';
-import { updateProfile } from '../../store/authSlice';
-import Button from '../../components/Button';
-import FormInput from '../../components/FormInput';
+import { useAppDispatch, useAppSelector } from '../../redux/hooks';
+import { useUpdateProfileMutation } from '../../redux/services/auth';
+import { updateProfileLocal } from '../../redux/slices/auth';
+import Button from '../../components/ui/Button';
+import FormInput from '../../components/ui/FormInput';
 
 const ProfileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -19,17 +19,18 @@ const ProfileSchema = z.object({
 type ProfileFormData = z.infer<typeof ProfileSchema>;
 
 export const Profile: React.FC = () => {
-  const dispatch = useDispatch();
-  const { user, role } = useSelector((state: RootState) => state.auth);
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state) => state.auth);
+  const [updateProfileApi, { isLoading }] = useUpdateProfileMutation();
 
   const { register, handleSubmit, reset, formState: { errors, isDirty } } = useForm<ProfileFormData>({
     resolver: zodResolver(ProfileSchema),
     defaultValues: {
-      name: user?.name ?? '',
+      name: user?.fullName ?? (user as any)?.name ?? '',
       email: user?.email ?? '',
-      title: user?.title ?? '',
-      phone: user?.phone ?? '',
-      bio: user?.bio ?? ''
+      title: (user as any)?.title ?? '',
+      phone: user?.contactNumber ?? (user as any)?.phone ?? '',
+      bio: (user as any)?.bio ?? ''
     }
   });
 
@@ -37,28 +38,48 @@ export const Profile: React.FC = () => {
   useEffect(() => {
     if (user) {
       reset({
-        name: user.name,
+        name: user.fullName ?? (user as any).name ?? '',
         email: user.email,
-        title: user.title ?? '',
-        phone: user.phone ?? '',
-        bio: user.bio ?? ''
+        title: (user as any).title ?? '',
+        phone: user.contactNumber ?? (user as any).phone ?? '',
+        bio: (user as any).bio ?? ''
       });
     }
   }, [user, reset]);
 
-  const onSubmit = (data: ProfileFormData) => {
-    dispatch(updateProfile(data));
-    alert('Profile updated successfully!');
+  const onSubmit = async (data: ProfileFormData) => {
+    try {
+      await updateProfileApi({
+        fullName: data.name,
+        email: data.email,
+        contactNumber: data.phone,
+        title: data.title,
+        bio: data.bio
+      }).unwrap();
+      
+      dispatch(updateProfileLocal({
+        fullName: data.name,
+        email: data.email,
+        contactNumber: data.phone,
+        title: data.title,
+        bio: data.bio
+      } as any));
+
+      alert('Profile updated successfully!');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to update profile: ' + ((err as any)?.data?.message || 'Unknown error'));
+    }
   };
 
   const handleCancel = () => {
     if (user) {
       reset({
-        name: user.name,
+        name: user.fullName ?? (user as any).name ?? '',
         email: user.email,
-        title: user.title ?? '',
-        phone: user.phone ?? '',
-        bio: user.bio ?? ''
+        title: (user as any).title ?? '',
+        phone: user.contactNumber ?? (user as any).phone ?? '',
+        bio: (user as any).bio ?? ''
       });
     }
   };
@@ -78,7 +99,7 @@ export const Profile: React.FC = () => {
           
           <div className="relative mt-8 mb-4">
             <div className="w-28 h-28 rounded-full bg-gradient-to-br from-accent-400 to-indigo-500 text-white border-4 border-white dark:border-navy-card flex items-center justify-center font-bold text-4xl shadow-md transition-all">
-              {user?.name?.charAt(0) || 'U'}
+              {(user?.fullName ?? (user as any)?.name)?.charAt(0) || 'U'}
             </div>
             <button className="absolute bottom-0 right-1 p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-accent-600 rounded-full shadow-md cursor-pointer transition-colors duration-200">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,11 +109,11 @@ export const Profile: React.FC = () => {
             </button>
           </div>
 
-          <h3 className="text-lg font-extrabold text-slate-900 dark:text-slate-100">{user?.name}</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-4">{user?.title || 'Agency Personnel'}</p>
+          <h3 className="text-lg font-extrabold text-slate-900 dark:text-slate-100">{user?.fullName ?? (user as any)?.name}</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-4">{(user as any)?.title || 'Agency Personnel'}</p>
           
           <span className="px-3.5 py-1 bg-accent-50 dark:bg-accent-950/40 text-accent-700 dark:text-accent-300 text-[10px] font-extrabold rounded-full uppercase tracking-wider border border-accent-100 dark:border-accent-800/30">
-            {role} Role
+            {user?.role?.name || 'User'} Role
           </span>
         </div>
 
@@ -158,7 +179,7 @@ export const Profile: React.FC = () => {
                   type="button"
                   variant="secondary"
                   onClick={handleCancel}
-                  disabled={!isDirty}
+                  disabled={!isDirty || isLoading}
                   className="dark:bg-[#0f1422] dark:border-navy-border dark:text-slate-350 dark:hover:bg-slate-800"
                 >
                   Cancel
@@ -167,6 +188,7 @@ export const Profile: React.FC = () => {
                   type="submit"
                   variant="primary"
                   disabled={!isDirty}
+                  isLoading={isLoading}
                 >
                   Save Changes
                 </Button>

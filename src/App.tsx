@@ -1,15 +1,20 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { Provider, useSelector } from 'react-redux';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { store, RootState } from './store';
-import { queryClient } from './features/models/queryClient';
+import ReduxProvider from './redux/Provider';
+import { useAppSelector } from './redux/hooks';
+import { useCurrentUserDataQuery } from './redux/services/auth';
+import { queryClient } from './pages/models/queryClient';
 import { AbilityProvider } from './context/AbilityContext';
 import AppRoutes from './routes/AppRoutes';
 import './App.css';
 
 const AppContent: React.FC = () => {
-  const darkMode = useSelector((state: RootState) => state.ui.darkMode);
+  const darkMode = useAppSelector((state) => state.ui.darkMode);
+  const token = useAppSelector((state) => state.auth.token);
+
+  // Automatically fetch latest profile info when token is present
+  useCurrentUserDataQuery(undefined, { skip: !token });
 
   useEffect(() => {
     if (darkMode) {
@@ -24,7 +29,7 @@ const AppContent: React.FC = () => {
 
 function App() {
   return (
-    <Provider store={store}>
+    <ReduxProvider>
       <QueryClientProvider client={queryClient}>
         <AbilityProvider>
           <BrowserRouter>
@@ -32,7 +37,7 @@ function App() {
           </BrowserRouter>
         </AbilityProvider>
       </QueryClientProvider>
-    </Provider>
+    </ReduxProvider>
   );
 }
 

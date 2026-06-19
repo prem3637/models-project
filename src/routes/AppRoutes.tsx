@@ -1,19 +1,11 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { RootState } from '../store';
+import { useAppSelector } from '../redux/hooks';
 import { Actions, Subjects } from '../context/ability';
 import { useAppAbility } from '../context/AbilityContext';
 import AuthLayout from '../components/Layouts/AuthLayout';
 import DashboardLayout from '../components/Layouts/DashboardLayout';
-import Login from '../features/auth/Login';
-import ForgotPassword from '../features/auth/ForgotPassword';
-import ModelDashboard from '../features/models/ModelDashboard';
-import ModelList from '../features/models/ModelList';
-import ModelDetails from '../features/models/ModelDetails';
-import UserManagement from '../features/users/UserManagement';
-import RoleConfiguration from '../features/users/RoleConfiguration';
-import Profile from '../features/admin/Profile';
+import routesConfig, { RouteConfig } from './routesConfig';
 
 // Private Route Guard
 interface GuardProps {
@@ -21,8 +13,14 @@ interface GuardProps {
 }
 
 const PrivateRoute: React.FC<GuardProps> = ({ children }) => {
-  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  const token = useAppSelector((state) => state.auth.token);
+  return token ? <>{children}</> : <Navigate to="/login" replace />;
+};
+
+// Public Route Guard (redirects to /dashboard if already logged in)
+const PublicRoute: React.FC<GuardProps> = ({ children }) => {
+  const token = useAppSelector((state) => state.auth.token);
+  return token ? <Navigate to="/dashboard" replace /> : <>{children}</>;
 };
 
 // CASL Permission Gate Guard for Page Routes
@@ -60,99 +58,40 @@ const PermissionGate: React.FC<GateProps> = ({ action, subject, children }) => {
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      {/* Public Auth Routes */}
-      <Route
-        path="/login"
-        element={
-          <AuthLayout>
-            <Login />
-          </AuthLayout>
+      {routesConfig.map((route: RouteConfig) => {
+        const Component = route.element;
+        
+        let content = <Component />;
+        if (route.requiredPermission) {
+          content = (
+            <PermissionGate
+              action={route.requiredPermission.action}
+              subject={route.requiredPermission.subject}
+            >
+              {content}
+            </PermissionGate>
+          );
         }
-      />
-      <Route
-        path="/forgot-password"
-        element={
-          <AuthLayout>
-            <ForgotPassword />
-          </AuthLayout>
-        }
-      />
 
-      {/* Private Dashboard Routes */}
-      <Route
-        path="/dashboard"
-        element={
-          <PrivateRoute>
-            <DashboardLayout>
-              <ModelDashboard />
-            </DashboardLayout>
-          </PrivateRoute>
+        if (route.isPrivate) {
+          content = (
+            <PrivateRoute>
+              <DashboardLayout>{content}</DashboardLayout>
+            </PrivateRoute>
+          );
+        } else {
+          content = (
+            <PublicRoute>
+              <AuthLayout>{content}</AuthLayout>
+            </PublicRoute>
+          );
         }
-      />
-      <Route
-        path="/models"
-        element={
-          <PrivateRoute>
-            <DashboardLayout>
-              <ModelList />
-            </DashboardLayout>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/models/:id"
-        element={
-          <PrivateRoute>
-            <DashboardLayout>
-              <PermissionGate action="read" subject="Model">
-                <ModelDetails />
-              </PermissionGate>
-            </DashboardLayout>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/users"
-        element={
-          <PrivateRoute>
-            <DashboardLayout>
-              <PermissionGate action="read" subject="User">
-                <UserManagement />
-              </PermissionGate>
-            </DashboardLayout>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/roles"
-        element={
-          <PrivateRoute>
-            <DashboardLayout>
-              <PermissionGate action="read" subject="User">
-                <RoleConfiguration />
-              </PermissionGate>
-            </DashboardLayout>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/settings/profile"
-        element={
-          <PrivateRoute>
-            <DashboardLayout>
-              <PermissionGate action="manage" subject="Settings">
-                <Profile />
-              </PermissionGate>
-            </DashboardLayout>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/settings"
-        element={<Navigate to="/settings/profile" replace />}
-      />
 
-      {/* Redirections */}
+        return <Route key={route.path} path={route.path} element={content} />;
+      })}
+
+      {/* Static Redirections */}
+      <Route path="/settings" element={<Navigate to="/settings/profile" replace />} />
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>

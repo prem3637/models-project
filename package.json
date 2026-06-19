@@ -17,12 +17,14 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^13.5.0",
+    "lucide-react": "^1.20.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-hook-form": "^7.76.0",
     "react-redux": "^9.3.0",
     "react-router-dom": "^7.15.1",
     "react-scripts": "5.0.1",
+    "redux-persist": "^6.0.0",
     "web-vitals": "^2.1.4",
     "zod": "^4.4.3"
   },
@@ -59,6 +61,6 @@
     "autoprefixer": "^10.5.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^3.4.17",
-    "typescript": "^6.0.3"
+    "typescript": "^5.1.6"
   }
 }

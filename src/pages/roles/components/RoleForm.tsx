@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { DEFAULT_PERMISSIONS } from '../../context/ability';
-import Button from '../../components/Button';
-import Pagination from '../../components/Pagination';
-import { useUsers } from './usersHooks';
-import { usersDb } from './usersDb';
+import { DEFAULT_PERMISSIONS } from '../../../context/ability';
+import Button from '../../../components/ui/Button';
+import { ArrowLeft, Save, Check } from 'lucide-react';
 
 type ModuleKey = 'Dashboard' | 'Model' | 'User' | 'Roles' | 'Settings';
 type ActionKey = 'read' | 'create' | 'update' | 'delete';
@@ -66,18 +63,16 @@ const getRoleMeta = (r: string) => {
   };
 };
 
+interface RoleFormProps {
+  selectedRole: string; // '' for new, or role name key
+  onSuccess: () => void;
+  onCancel: () => void;
+}
 
-export const RoleConfiguration: React.FC = () => {
-  const queryClient = useQueryClient();
-  const [view, setView] = useState<'list' | 'config'>('list');
-  const [selectedRole, setSelectedRole] = useState<string>('editor');
-  const [roleNameInput, setRoleNameInput] = useState('Editor');
-  const [roleDescription, setRoleDescription] = useState('Can view and update models. Cannot create, delete, or access Settings.');
-  
-  const [search, setSearch] = useState('');
-  const [pageIndex, setPageIndex] = useState(0);
-  const [pageSize, setPageSize] = useState(5);
-  
+export const RoleForm: React.FC<RoleFormProps> = ({ selectedRole, onSuccess, onCancel }) => {
+  const [roleNameInput, setRoleNameInput] = useState('');
+  const [roleDescription, setRoleDescription] = useState('');
+
   const [permissions, setPermissions] = useState<any>(() => {
     const saved = localStorage.getItem('rbc_role_permissions');
     if (saved) {
@@ -90,23 +85,9 @@ export const RoleConfiguration: React.FC = () => {
     return JSON.parse(JSON.stringify(DEFAULT_PERMISSIONS));
   });
 
-  const { data: users = [] } = useUsers();
-  const counts: Record<string, number> = {};
-  users.forEach(u => {
-    const r = u.role || 'viewer';
-    counts[r] = (counts[r] || 0) + 1;
-  });
 
-  const roleKeys = Object.keys(permissions);
-  const sortedRoleKeys = roleKeys.sort((a, b) => {
-    const order = { admin: 1, editor: 2, viewer: 3 };
-    const aOrder = (order as any)[a] || 99;
-    const bOrder = (order as any)[b] || 99;
-    if (aOrder !== bOrder) return aOrder - bOrder;
-    return a.localeCompare(b);
-  });
 
-  // Keep state in sync when selecting different role
+  // Keep state in sync when selectedRole changes or permissions load
   useEffect(() => {
     if (selectedRole === 'admin') {
       setRoleNameInput('Admin');
@@ -137,7 +118,6 @@ export const RoleConfiguration: React.FC = () => {
     }
   }, [selectedRole]);
 
-  // Load custom values if they exist
   const activePerms = permissions[selectedRole] || {
     Dashboard: { read: false },
     Model: { read: false, create: false, update: false, delete: false },
@@ -149,7 +129,7 @@ export const RoleConfiguration: React.FC = () => {
   const handleCheckboxChange = (module: ModuleKey, action: ActionKey, value: boolean) => {
     const updated = {
       ...permissions,
-      [selectedRole]: {
+      [selectedRole || '']: {
         ...activePerms,
         [module]: {
           ...activePerms[module],
@@ -173,7 +153,7 @@ export const RoleConfiguration: React.FC = () => {
 
     const updated = {
       ...permissions,
-      [selectedRole]: {
+      [selectedRole || '']: {
         ...activePerms,
         [module]: updatedModulePerms
       }
@@ -252,215 +232,18 @@ export const RoleConfiguration: React.FC = () => {
 
     alert('Dynamic role permissions updated in CASL system successfully!');
     window.dispatchEvent(new Event('storage'));
-    setView('list');
+    onSuccess();
   };
-
-  const handleDeleteRole = (roleKey: string) => {
-    if (roleKey === 'admin' || roleKey === 'editor' || roleKey === 'viewer') return;
-    
-    const count = counts[roleKey] || 0;
-    const confirmMessage = count > 0 
-      ? `Are you sure you want to delete the "${roleKey}" role? This will automatically reassign ${count} user(s) to the Viewer role.`
-      : `Are you sure you want to delete the "${roleKey}" role?`;
-      
-    if (!window.confirm(confirmMessage)) return;
-
-    const updatedPerms = { ...permissions };
-    delete updatedPerms[roleKey];
-    localStorage.setItem('rbc_role_permissions', JSON.stringify(updatedPerms));
-    setPermissions(updatedPerms);
-
-    const savedMeta = localStorage.getItem('rbc_roles_metadata');
-    if (savedMeta) {
-      try {
-        const metaObj = JSON.parse(savedMeta);
-        delete metaObj[roleKey];
-        localStorage.setItem('rbc_roles_metadata', JSON.stringify(metaObj));
-      } catch {}
-    }
-
-    users.forEach(u => {
-      if (u.role === roleKey) {
-        usersDb.update(u.id, { role: 'viewer' });
-      }
-    });
-
-    queryClient.invalidateQueries({ queryKey: ['users'] });
-    window.dispatchEvent(new Event('storage'));
-    
-    alert(`Role "${roleKey}" was deleted successfully.`);
-  };
-
-  if (view === 'list') {
-    const filteredRoles = sortedRoleKeys.filter(roleKey => {
-      const rm = getRoleMeta(roleKey);
-      const label = rm.label.toLowerCase();
-      const desc = rm.desc.toLowerCase();
-      const q = search.toLowerCase();
-      return label.includes(q) || desc.includes(q);
-    });
-
-    const totalRows = filteredRoles.length;
-    const pageCount = Math.ceil(totalRows / pageSize);
-    const safePageIndex = Math.min(pageIndex, Math.max(0, pageCount - 1));
-    const paginatedRoles = filteredRoles.slice(
-      safePageIndex * pageSize,
-      (safePageIndex + 1) * pageSize
-    );
-
-    const canPreviousPage = safePageIndex > 0;
-    const canNextPage = safePageIndex < pageCount - 1;
-
-    return (
-      <div className="flex flex-col gap-6 text-slate-800 dark:text-slate-100 transition-colors duration-200">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Role Configuration</h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Manage global system access tiers, assign permissions, and add custom roles.</p>
-          </div>
-        </div>
-
-        {/* Search & Add bar */}
-        <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center gap-4">
-          <div className="relative flex-1">
-            <input
-              type="text"
-              placeholder="Search roles by name or description…"
-              value={search}
-              onChange={e => { setSearch(e.target.value); setPageIndex(0); }}
-              className="w-full pl-9 pr-4 py-2 bg-white dark:bg-navy-950/40 border border-slate-300 dark:border-navy-border rounded-lg text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-accent-500 focus:ring-4 focus:ring-accent-500/20 outline-none transition-all"
-            />
-            <svg className="absolute left-3 top-2.5 w-4 h-4 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-          <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto justify-end sm:justify-start">
-            {search && (
-              <button
-                onClick={() => { setSearch(''); setPageIndex(0); }}
-                className="text-xs font-bold text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 uppercase tracking-wider transition-colors cursor-pointer"
-              >
-                Clear Search ×
-              </button>
-            )}
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => { setSelectedRole(''); setView('config'); }}
-              leftIcon={
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              }
-              className="cursor-pointer font-bold uppercase tracking-wider text-xs w-full sm:w-auto justify-center"
-            >
-              Add Role
-            </Button>
-          </div>
-        </div>
-
-        {/* Roles Table */}
-        <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border rounded-2xl shadow-sm overflow-hidden transition-colors duration-200">
-          {filteredRoles.length === 0 ? (
-            <div className="py-16 text-center text-xs text-slate-400 dark:text-slate-500 font-semibold">
-              No roles matching search query.
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[650px] text-xs text-left border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50 dark:bg-navy-950/40 border-b border-slate-200 dark:border-navy-border text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
-                      <th className="py-4 px-6 font-bold w-[25%]">Role</th>
-                      <th className="py-4 px-5 font-bold w-[45%]">Description</th>
-                      <th className="py-4 px-5 text-center font-bold w-[15%]">Assigned Users</th>
-                      <th className="py-4 px-6 text-right font-bold w-[15%]">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-navy-border">
-                    {paginatedRoles.map(roleKey => {
-                      const rm = getRoleMeta(roleKey);
-                      const isDefault = ['admin', 'editor', 'viewer'].includes(roleKey);
-                      const userCount = counts[roleKey] || 0;
-
-                      return (
-                        <tr key={roleKey} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10 transition-colors">
-                          <td className="py-4 px-6 font-extrabold text-slate-800 dark:text-slate-200">
-                            <div className="flex items-center gap-2.5">
-                              <span className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest ${rm.bg} ${rm.color} border ${rm.border}`}>
-                                {rm.label}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="py-4 px-5 text-slate-550 dark:text-slate-405 font-medium leading-relaxed">
-                            {rm.desc}
-                          </td>
-                          <td className="py-4 px-5 text-center font-bold text-slate-700 dark:text-slate-350">
-                            {userCount} {userCount === 1 ? 'user' : 'users'}
-                          </td>
-                          <td className="py-4 px-6 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                onClick={() => { setSelectedRole(roleKey); setView('config'); }}
-                                className="text-[10px] font-bold uppercase tracking-wider dark:bg-[#0f1422] dark:border-navy-border dark:text-slate-350 dark:hover:bg-slate-800 border cursor-pointer px-2.5 py-1.5"
-                              >
-                                Configure
-                              </Button>
-                              
-                              {!isDefault && (
-                                <Button
-                                  variant="secondary"
-                                  size="sm"
-                                  onClick={() => handleDeleteRole(roleKey)}
-                                  className="text-[10px] font-bold uppercase tracking-wider text-red-500 hover:text-red-650 dark:text-red-400 dark:hover:text-red-300 border border-red-200 hover:border-red-300 dark:border-red-950 dark:hover:border-red-900 dark:bg-[#1a0f0f] cursor-pointer px-2.5 py-1.5"
-                                >
-                                  Delete
-                                </Button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Pagination bar */}
-              <Pagination
-                pageIndex={safePageIndex}
-                pageCount={pageCount}
-                pageSize={pageSize}
-                totalRows={totalRows}
-                canPreviousPage={canPreviousPage}
-                canNextPage={canNextPage}
-                onFirstPage={() => setPageIndex(0)}
-                onPreviousPage={() => setPageIndex(p => Math.max(0, p - 1))}
-                onNextPage={() => setPageIndex(p => Math.min(pageCount - 1, p + 1))}
-                onLastPage={() => setPageIndex(pageCount - 1)}
-                onPageSizeChange={size => { setPageSize(size); setPageIndex(0); }}
-                onPageChange={index => setPageIndex(index)}
-              />
-            </>
-          )}
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="flex flex-col gap-6 text-slate-800 dark:text-slate-100 transition-colors duration-200">
+    <div className="flex flex-col gap-6">
       {/* Subheader / Back link */}
       <div className="flex items-center justify-between">
         <button
-          onClick={() => setView('list')}
-          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-slate-850 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer"
+          onClick={onCancel}
+          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-slate-855 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
+          <ArrowLeft className="w-4 h-4" />
           Back to Roles list
         </button>
       </div>
@@ -470,27 +253,10 @@ export const RoleConfiguration: React.FC = () => {
         <div className="flex flex-col gap-6">
           {/* Role Details Card */}
           <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border rounded-2xl p-6 shadow-sm flex flex-col gap-4 transition-colors duration-200">
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-slate-100">Role Details</h2>
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+              {selectedRole === '' ? 'Create New Role' : `Customize Role: ${getRoleMeta(selectedRole).label}`}
+            </h2>
             
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="role-select" className="text-[10px] font-bold text-slate-500 dark:text-slate-405 uppercase tracking-wider">
-                Select Role to Customize
-              </label>
-              <select
-                id="role-select"
-                value={selectedRole}
-                onChange={e => setSelectedRole(e.target.value)}
-                className="w-full px-3.5 py-2 bg-slate-50 dark:bg-[#0f1422] border border-slate-200 dark:border-navy-border text-slate-850 dark:text-slate-200 rounded-lg text-xs font-bold focus:outline-none cursor-pointer"
-              >
-                <option value="">-- Create New Role --</option>
-                {sortedRoleKeys.map(k => (
-                  <option key={k} value={k}>
-                    {getRoleMeta(k).label} {['admin', 'editor', 'viewer'].includes(k) ? `(${k === 'admin' ? 'Full Override' : k === 'editor' ? 'Write & Update' : 'Read Only'})` : '(Custom)'}
-                  </option>
-                ))}
-              </select>
-            </div>
-
             <div className="flex flex-col gap-1.5">
               <label htmlFor="role-name" className="text-[10px] font-bold text-slate-500 dark:text-slate-405 uppercase tracking-wider">
                 Role Name *
@@ -516,7 +282,7 @@ export const RoleConfiguration: React.FC = () => {
                 value={roleDescription}
                 disabled={['admin', 'editor', 'viewer'].includes(selectedRole)}
                 onChange={e => setRoleDescription(e.target.value)}
-                className="w-full px-3.5 py-2 bg-white dark:bg-[#0f1422] border border-slate-300 dark:border-navy-border rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none text-xs font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full px-3.5 py-2 bg-white dark:bg-[#0f1422] border border-slate-300 dark:border-navy-border rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-405 outline-none text-xs font-medium disabled:opacity-60 disabled:cursor-not-allowed"
                 placeholder="Describe what this role can do..."
               />
             </div>
@@ -561,9 +327,7 @@ export const RoleConfiguration: React.FC = () => {
                   onClick={handleSaveChanges}
                   className="shadow-sm cursor-pointer w-full sm:w-auto justify-center"
                 >
-                  <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                  </svg>
+                  <Save className="w-4 h-4 mr-1.5" />
                   {selectedRole === '' ? 'Create Role' : 'Save Changes'}
                 </Button>
               </div>
@@ -614,9 +378,7 @@ export const RoleConfiguration: React.FC = () => {
                                         : 'bg-white dark:bg-[#0f1422] border-slate-300 dark:border-navy-border hover:border-slate-400 dark:hover:border-slate-600'
                                     }`}>
                                       {(isChecked || isAllChecked) && (
-                                        <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                        </svg>
+                                        <Check className="w-2.5 h-2.5" />
                                       )}
                                     </div>
                                   </label>
@@ -638,12 +400,10 @@ export const RoleConfiguration: React.FC = () => {
                               <div className={`w-4 h-4 rounded border transition-all flex items-center justify-center ${
                                 isAllChecked 
                                   ? 'bg-green-500 border-green-500 text-white shadow-sm shadow-green-500/10'
-                                  : 'bg-white dark:bg-[#0f1422] border-slate-300 dark:border-navy-border hover:border-slate-400'
+                                  : 'bg-white dark:bg-[#0f1422] border-slate-300 dark:border-navy-border hover:border-slate-405'
                               }`}>
                                 {isAllChecked && (
-                                  <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                  </svg>
+                                  <Check className="w-2.5 h-2.5" />
                                 )}
                               </div>
                             </label>
@@ -660,9 +420,7 @@ export const RoleConfiguration: React.FC = () => {
             <div className="p-6 bg-slate-50/50 dark:bg-navy-950/20 border-t border-slate-150 dark:border-navy-border flex flex-wrap gap-x-6 gap-y-3">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded bg-accent-600 border border-accent-600 text-white flex items-center justify-center">
-                  <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <Check className="w-2.5 h-2.5" />
                 </div>
                 <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Permitted</span>
               </div>
@@ -672,9 +430,7 @@ export const RoleConfiguration: React.FC = () => {
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded bg-green-500 border border-green-500 text-white flex items-center justify-center">
-                  <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <Check className="w-2.5 h-2.5" />
                 </div>
                 <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">All Permitted</span>
               </div>
@@ -690,4 +446,4 @@ export const RoleConfiguration: React.FC = () => {
   );
 };
 
-export default RoleConfiguration;
+export default RoleForm;

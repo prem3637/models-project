@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useModel, useDeleteModel } from './modelsHooks';
 import { useAppAbility } from '../../context/AbilityContext';
-import Button from '../../components/Button';
-import NestedDrawer from '../../components/NestedDrawer';
-import ModelForm from './ModelForm';
+import Button from '../../components/ui/Button';
+import NestedDrawer from '../../components/ui/NestedDrawer';
+import ModelForm from './components/ModelForm';
 
 export const ModelDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();

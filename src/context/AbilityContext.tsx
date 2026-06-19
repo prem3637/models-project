@@ -14,14 +14,15 @@ interface AbilityProviderProps {
 }
 
 export const AbilityProvider: React.FC<AbilityProviderProps> = ({ children }) => {
-  const role = useSelector((state: any) => state.auth.role) || 'viewer';
+  const user = useSelector((state: any) => state.auth?.user);
+  const role = user?.role?.name || 'viewer';
   
-  const [ability, setAbility] = useState<AppAbility>(() => buildAbilityFor(role));
+  const [ability, setAbility] = useState<AppAbility>(() => buildAbilityFor(role, user));
 
   useEffect(() => {
-    // Update ability whenever user role changes in state
-    setAbility(buildAbilityFor(role));
-  }, [role]);
+    // Update ability whenever user role or user permissions change in state
+    setAbility(buildAbilityFor(role, user));
+  }, [role, user]);
 
   return (
     <AbilityContext.Provider value={ability}>

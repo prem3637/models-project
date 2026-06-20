@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useModel, useDeleteModel } from './modelsHooks';
 import { useAppAbility } from '../../context/AbilityContext';
 import Button from '../../components/ui/Button';
+import Skeleton from '../../components/ui/Skeleton';
 import NestedDrawer from '../../components/ui/NestedDrawer';
 import ModelForm from './components/ModelForm';
 
@@ -41,14 +42,74 @@ export const ModelDetails: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-6 animate-pulse">
-        <div className="h-8 w-32 bg-slate-200 rounded-lg" />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 flex flex-col gap-6">
-            <div className="h-[300px] bg-slate-200 rounded-2xl" />
-            <div className="h-[200px] bg-slate-200 rounded-2xl" />
+      <div className="flex flex-col gap-6 max-w-7xl mx-auto">
+        {/* Back Link Skeleton */}
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-4 w-24" />
+        </div>
+
+        {/* Profile Header Card Skeleton */}
+        <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex flex-col md:flex-row items-center gap-6 w-full md:w-auto">
+            <Skeleton className="w-24 h-24 rounded-full shrink-0" />
+            <div className="flex flex-col items-center md:items-start gap-2.5 w-full md:w-48">
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-4 w-28" />
+              <div className="flex gap-2 mt-1">
+                <Skeleton className="h-5 w-16 rounded-full" />
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </div>
+            </div>
           </div>
-          <div className="h-[400px] bg-slate-200 rounded-2xl" />
+          <div className="flex gap-3 shrink-0 w-full md:w-auto justify-center">
+            <Skeleton className="h-9 w-20 rounded-lg" />
+            <Skeleton className="h-9 w-20 rounded-lg" />
+          </div>
+        </div>
+
+        {/* Main Details Grid Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Columns (col-span-2) */}
+          <div className="lg:col-span-2 flex flex-col gap-6">
+            {/* Biography & Basic Info Card */}
+            <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-4">
+              <Skeleton className="h-4.5 w-32" />
+              <div className="flex flex-col gap-2 mt-2">
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-11/12" />
+                <Skeleton className="h-3 w-5/6" />
+                <Skeleton className="h-3 w-2/3" />
+              </div>
+            </div>
+
+            {/* Portfolio Grid */}
+            <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-4">
+              <div className="flex justify-between items-center">
+                <Skeleton className="h-4.5 w-40" />
+                <Skeleton className="h-8 w-24 rounded-lg" />
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-2">
+                {[1, 2, 3, 4, 5, 6].map(n => (
+                  <Skeleton key={n} className="aspect-square rounded-xl w-full" />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column (Roster details stats) */}
+          <div className="flex flex-col gap-6">
+            <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-4">
+              <Skeleton className="h-4.5 w-28 mb-2" />
+              <div className="flex flex-col gap-4 mt-1">
+                {[1, 2, 3, 4, 5, 6].map(n => (
+                  <div key={n} className="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-navy-border/40 last:border-b-0 last:pb-0">
+                    <Skeleton className="h-3 w-16" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -96,7 +157,7 @@ export const ModelDetails: React.FC = () => {
         </Link>
 
         <div className="flex items-center gap-2">
-          {ability.can('update', 'Model') && (
+          {ability.can('update', 'models') && (
             <Button
               onClick={() => setIsEditOpen(true)}
               variant="secondary"
@@ -111,7 +172,7 @@ export const ModelDetails: React.FC = () => {
               Edit Profile
             </Button>
           )}
-          {ability.can('delete', 'Model') && (
+          {ability.can('delete', 'models') && (
             <Button
               onClick={handleDelete}
               variant="danger"

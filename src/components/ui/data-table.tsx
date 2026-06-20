@@ -10,7 +10,8 @@ import {
   cn
 } from "./table";
 import { DataTablePagination } from "./data-table-pagination";
-import { Loader2, Inbox } from "lucide-react";
+import { Inbox } from "lucide-react";
+import { Skeleton } from "./Skeleton";
 
 interface DataTableProps<TData> extends React.ComponentProps<"div"> {
   table: TanstackTable<TData>;
@@ -85,7 +86,21 @@ export function DataTable<TData>({
               ))}
             </TableHeader>
             <TableBody>
-              {table.getRowModel().rows.length ? (
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, rowIndex) => (
+                  <TableRow key={rowIndex} className="border-b border-slate-100 dark:border-navy-border/50">
+                    {table.getAllColumns().map((column, colIndex) => {
+                      const widths = ["w-1/2", "w-3/4", "w-2/3", "w-5/6", "w-full", "w-1/3"];
+                      const widthClass = widths[(rowIndex + colIndex) % widths.length];
+                      return (
+                        <TableCell key={colIndex}>
+                          <Skeleton className={`h-4 ${widthClass}`} />
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                ))
+              ) : table.getRowModel().rows.length ? (
                 table.getRowModel().rows.map((row) => (
                   <TableRow
                     key={row.id}
@@ -116,17 +131,10 @@ export function DataTable<TData>({
                     className="text-center"
                     style={{ height: minHeight }}
                   >
-                    {isLoading ? (
-                      <div className="flex flex-col items-center justify-center py-12 gap-3">
-                        <Loader2 className="animate-spin w-8 h-8 text-accent-500" />
-                        <p className="text-xs text-slate-400 dark:text-slate-550 font-semibold">Loading data...</p>
-                      </div>
-                    ) : (
-                      <div className="text-center py-12 flex flex-col items-center justify-center gap-3">
-                        <Inbox className="w-10 h-10 text-slate-300 dark:text-slate-700" />
-                        <p className="text-xs font-semibold text-slate-400 dark:text-slate-500">{noResultMessage}</p>
-                      </div>
-                    )}
+                    <div className="text-center py-12 flex flex-col items-center justify-center gap-3">
+                      <Inbox className="w-10 h-10 text-slate-300 dark:text-slate-700" />
+                      <p className="text-xs font-semibold text-slate-400 dark:text-slate-500">{noResultMessage}</p>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}

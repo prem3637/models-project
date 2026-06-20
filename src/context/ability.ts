@@ -1,11 +1,14 @@
-import { AbilityBuilder, PureAbility, AbilityClass } from '@casl/ability';
+import { AbilityBuilder, PureAbility, AbilityClass, subject } from '@casl/ability';
 
-export type Actions = 'create' | 'read' | 'update' | 'delete' | 'manage';
-export type Subjects = 'Model' | 'Dashboard' | 'Settings' | 'User' | 'Roles' | 'all';
+export type Actions = string;
+export type Subjects = string;
 
 export type AppAbility = PureAbility<[Actions, Subjects]>;
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AppAbility = PureAbility as AbilityClass<AppAbility>;
+
+// Re-export subject helper for creating typed subjects
+export { subject };
 
 export const DEFAULT_PERMISSIONS = {
   admin: {
@@ -31,91 +34,59 @@ export const DEFAULT_PERMISSIONS = {
   }
 };
 
-export function defineRulesFor(role: string, user?: any) {
-  const { can, rules } = new AbilityBuilder<AppAbility>(AppAbility);
+// Custom conditions matcher for field-level permissions
+export const conditionsMatcher = (conditions: unknown) => {
+  return (object: Record<string, unknown>) => {
+    if (!conditions || typeof conditions !== "object") {
+      return true;
+    }
+    const conditionsObj = conditions as Record<string, unknown>;
+    return Object.keys(conditionsObj).every((field) => {
+      return conditionsObj[field] === object[field];
+    });
+  };
+};
 
-  // If user has specific API-driven permissions, parse them (e.g. "subject.action")
-  if (user && Array.isArray(user.permissions) && user.permissions.length > 0) {
-    if (role === 'admin' || role === 'Super Admin' || user.permissions.includes('*.*')) {
-      can('manage', 'all');
-      return rules;
+export const createEmptyAbility = (): AppAbility => {
+  return new PureAbility<[Actions, Subjects]>([]);
+};
+
+export function buildAbilityFor(user?: any): AppAbility {
+  const { can, cannot, build } = new AbilityBuilder<AppAbility>(AppAbility);
+
+  if (!user) {
+    return createEmptyAbility();
+  }
+
+  // Build abilities ONLY from user.permissions - no static module logic
+  // This ensures dynamic, permission-driven access control
+  (user.permissions || []).forEach((perm: string) => {
+    // Handle wildcard admin permission
+    if (perm === "*" || perm === "*.*") {
+      can("manage", "all");
+      return;
     }
 
-    user.permissions.forEach((perm: string) => {
-      const parts = perm.split('.');
-      if (parts.length === 2) {
-        let [apiSubject, apiAction] = parts;
-        
-        // Map API actions to CASL actions
-        let mappedAction = apiAction;
-        if (apiAction === 'browse') {
-          mappedAction = 'read';
-        }
-        
-        // Map API subjects to CASL subjects
-        let mappedSubject = '';
-        if (apiSubject === 'dashboard') {
-          mappedSubject = 'Dashboard';
-        } else if (apiSubject === 'user') {
-          mappedSubject = 'User';
-        } else if (apiSubject === 'models') {
-          mappedSubject = 'Model';
-        } else if (apiSubject === 'roles') {
-          mappedSubject = 'Roles';
-        } else if (apiSubject === 'settings') {
-          mappedSubject = 'Settings';
-        }
-
-        if (mappedSubject) {
-          can(mappedAction as any, mappedSubject as any);
-
-          // Special case: Roles page checks 'User' subject in routesConfig.
-          // Therefore, if the user has roles.read or roles.browse permission,
-          // they must be allowed to read/browse User subject so the route guard allows it.
-          if (apiSubject === 'roles') {
-            can(mappedAction as any, 'User');
-          }
-        }
-      }
-    });
-    return rules;
-  }
-
-  // Fallback to role-based rules (local storage or defaults)
-  const saved = localStorage.getItem('rbc_role_permissions');
-  let permissions: any = DEFAULT_PERMISSIONS;
-  if (saved) {
-    try {
-      permissions = JSON.parse(saved);
-    } catch {
-      // Fallback
+    // Parse 'module.action' format (e.g., 'orders.browse', 'users.edit')
+    const match = perm.match(/^([^.]+)\.([^.]+)$/);
+    if (!match) {
+      // If format doesn't match, skip this permission
+      return;
     }
-  }
 
-  // Admin role overrides
-  if (role === 'admin' || role === 'Super Admin') {
-    can('manage', 'all');
-    return rules;
-  }
+    const moduleName = match[1];
+    const actionName = match[2];
+    
+    // Grant the permission dynamically
+    can(actionName, moduleName);
+  });
 
-  const roleRules = permissions[role] || permissions.viewer;
+  // Special restrictions - prevent certain actions even with permissions
+  // Users cannot delete themselves
+  cannot("delete", "users", { id: user.id });
 
-  if (roleRules) {
-    // Map modules & operations to CASL
-    Object.entries(roleRules).forEach(([subject, actions]: [string, any]) => {
-      Object.entries(actions).forEach(([action, isAllowed]) => {
-        if (isAllowed) {
-          can(action as any, subject as any);
-        }
-      });
-    });
-  }
-
-  return rules;
-}
-
-export function buildAbilityFor(role: string, user?: any): AppAbility {
-  return new AppAbility(defineRulesFor(role, user), {
+  return build({
+    conditionsMatcher,
     detectSubjectType: (item: any) => {
       if (item && item.type) return item.type;
       return 'all';

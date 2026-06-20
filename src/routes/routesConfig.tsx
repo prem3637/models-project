@@ -1,5 +1,4 @@
 import React from 'react';
-import { Actions, Subjects } from '../context/ability';
 import Login from '../pages/auth/Login';
 import ForgotPassword from '../pages/auth/ForgotPassword';
 import ModelDashboard from '../pages/models/ModelDashboard';
@@ -10,13 +9,19 @@ import RoleConfiguration from '../pages/roles/RoleConfiguration';
 import Profile from '../pages/admin/Profile';
 
 export interface RouteConfig {
-  path: string;
-  element: React.ComponentType;
+  path?: string;
+  element?: React.ComponentType;
   isPrivate?: boolean;
   requiredPermission?: {
-    action: Actions;
-    subject: Subjects;
+    action: string;
+    subject: string;
   };
+  sidebar?: {
+    id: string;
+    title: string;
+    icon?: string;
+  };
+  children?: RouteConfig[];
 }
 
 export const routesConfig: RouteConfig[] = [
@@ -33,12 +38,30 @@ export const routesConfig: RouteConfig[] = [
   {
     path: '/dashboard',
     element: ModelDashboard,
-    isPrivate: true
+    isPrivate: true,
+    requiredPermission: {
+      action: 'browse',
+      subject: 'dashboard'
+    },
+    sidebar: {
+      id: 'dashboard',
+      title: 'Dashboard',
+      icon: 'Dashboard'
+    }
   },
   {
     path: '/models',
     element: ModelList,
-    isPrivate: true
+    isPrivate: true,
+    requiredPermission: {
+      action: 'browse',
+      subject: 'models'
+    },
+    sidebar: {
+      id: 'models',
+      title: 'Model Management',
+      icon: 'People'
+    }
   },
   {
     path: '/models/:id',
@@ -46,7 +69,7 @@ export const routesConfig: RouteConfig[] = [
     isPrivate: true,
     requiredPermission: {
       action: 'read',
-      subject: 'Model'
+      subject: 'models'
     }
   },
   {
@@ -54,8 +77,13 @@ export const routesConfig: RouteConfig[] = [
     element: UserManagement,
     isPrivate: true,
     requiredPermission: {
-      action: 'read',
-      subject: 'User'
+      action: 'browse',
+      subject: 'users'
+    },
+    sidebar: {
+      id: 'users',
+      title: 'Users',
+      icon: 'Users'
     }
   },
   {
@@ -63,18 +91,37 @@ export const routesConfig: RouteConfig[] = [
     element: RoleConfiguration,
     isPrivate: true,
     requiredPermission: {
-      action: 'read',
-      subject: 'User'
+      action: 'browse',
+      subject: 'roles'
+    },
+    sidebar: {
+      id: 'roles',
+      title: 'Roles',
+      icon: 'Roles'
     }
   },
   {
-    path: '/settings/profile',
-    element: Profile,
     isPrivate: true,
-    requiredPermission: {
-      action: 'manage',
-      subject: 'Settings'
-    }
+    sidebar: {
+      id: 'settings',
+      title: 'Settings',
+      icon: 'Settings'
+    },
+    children: [
+      {
+        path: '/settings/profile',
+        element: Profile,
+        isPrivate: true,
+        requiredPermission: {
+          action: 'browse',
+          subject: 'settings'
+        },
+        sidebar: {
+          id: 'profile',
+          title: 'Profile'
+        }
+      }
+    ]
   }
 ];
 

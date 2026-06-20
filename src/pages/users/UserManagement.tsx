@@ -150,7 +150,7 @@ export const UserManagement: React.FC = () => {
                 Clear Filter ×
               </button>
             )}
-            {ability.can('create', 'User') && (
+            {ability.can('create', 'users') && (
               <Button
                 variant="primary"
                 size="sm"

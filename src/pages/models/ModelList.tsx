@@ -189,7 +189,7 @@ export const ModelList: React.FC = () => {
               <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
             </div>
             
-            {ability.can('create', 'Model') && (
+            {ability.can('create', 'models') && (
               <Button
                 onClick={handleOpenAddDirect}
                 variant="primary"

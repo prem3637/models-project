@@ -103,7 +103,7 @@ export const getModelColumns = ({ onOpenDetails, onOpenEdit, onDelete, ability }
           >
             <Eye className="w-3.5 h-3.5" />
           </button>
-          {ability.can('update', 'Model') && (
+          {ability.can('update', 'models') && (
             <button
               onClick={() => onOpenEdit(model)}
               title="Edit Details"
@@ -112,7 +112,7 @@ export const getModelColumns = ({ onOpenDetails, onOpenEdit, onDelete, ability }
               <Edit className="w-3.5 h-3.5" />
             </button>
           )}
-          {ability.can('delete', 'Model') && (
+          {ability.can('delete', 'models') && (
             <button
               onClick={() => onDelete(model.id, model.name)}
               title="Delete Profile"

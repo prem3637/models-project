@@ -111,8 +111,8 @@ export const getUserColumns = ({ onEdit, onDelete, ability }: UserColumnsProps) 
     header: 'Actions',
     cell: info => {
       const user = info.row.original;
-      const canUpdate = ability.can('update', 'User');
-      const canDelete = ability.can('delete', 'User');
+      const canUpdate = ability.can('update', 'users');
+      const canDelete = ability.can('delete', 'users');
 
       if (!canUpdate && !canDelete) {
         return <span className="text-slate-400 font-medium text-xs">—</span>;

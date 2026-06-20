@@ -4,9 +4,10 @@ import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { logout } from '../../redux/slices/auth';
 import { toggleSidebar, toggleDarkMode } from '../../redux/slices/ui';
 import { useAppAbility } from '../../context/AbilityContext';
-import navigationData from '../../routes/navigation.json';
+import routesConfig from '../../routes/routesConfig';
 import Sidebar from './Dashboard/Sidebar';
 import TopBar from './Dashboard/TopBar';
+import { generateNavigationData, filterNavigationItems } from '../../utils/helperfunction';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -28,16 +29,15 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     navigate('/login');
   };
 
-  // Filter navigation items by CASL ability
-  const filteredNavItems = navigationData.filter(item => {
-    return ability.can(item.action as any, item.subject as any);
-  });
+  // Generate and filter navigation data dynamically from routesConfig
+  const navigationData = generateNavigationData(routesConfig);
+  const filteredNavItems = filterNavigationItems(navigationData, ability);
 
   const getPageTitle = () => {
     if (location.pathname === '/settings/profile' || location.pathname === '/settings') return 'Profile';
     if (location.pathname === '/roles') return 'Role Configuration';
     if (location.pathname.startsWith('/models/')) return 'Talent Profile Details';
-    const matched = navigationData.find(item => item.path === location.pathname);
+    const matched = filteredNavItems.find(item => item.path === location.pathname);
     if (matched) return matched.title;
     return 'Dashboard';
   };

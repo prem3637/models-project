@@ -72,3 +72,42 @@ input[type="range"]::-webkit-slider-thumb {
 input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.2);
 }
+
+/* Shimmer animation keyframes */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer-bg {
+  background: linear-gradient(
+    90deg,
+    #e2e8f0 25%,
+    #f8fafc 50%,
+    #e2e8f0 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite linear;
+}
+
+.dark .shimmer-bg {
+  background: linear-gradient(
+    90deg,
+    #1e293b 25%,
+    #1e293b/40 50%,
+    #1e293b 75%
+  );
+  /* Fallback without opacity slash syntax if compiler complains, but linear-gradient is fine. Let's use clean values: */
+  background: linear-gradient(
+    90deg,
+    #1e293b 25%,
+    #2c3749 50%,
+    #1e293b 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite linear;
+}

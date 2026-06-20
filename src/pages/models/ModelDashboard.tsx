@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useModels } from './modelsHooks';
 import { Link } from 'react-router-dom';
+import Skeleton from '../../components/ui/Skeleton';
 
 export const ModelDashboard: React.FC = () => {
   const { data: models = [], isLoading } = useModels();
@@ -47,15 +48,99 @@ export const ModelDashboard: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-6 animate-pulse">
+      <div className="flex flex-col gap-6">
+        {/* KPI Cards Skeleton */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map(n => (
-            <div key={n} className="h-28 bg-slate-200 dark:bg-navy-card rounded-2xl border dark:border-navy-border" />
+            <div key={n} className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl flex items-center justify-between shadow-sm">
+              <div className="flex flex-col gap-2.5 w-2/3">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-8 w-12" />
+                <Skeleton className="h-2.5 w-20" />
+              </div>
+              <Skeleton className="w-12 h-12 rounded-xl" />
+            </div>
           ))}
         </div>
+
+        {/* Charts and Lists Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 h-[340px] bg-slate-200 dark:bg-navy-card rounded-2xl border dark:border-navy-border" />
-          <div className="h-[340px] bg-slate-200 dark:bg-navy-card rounded-2xl border dark:border-navy-border" />
+          {/* Left Area (Trend + Categories) */}
+          <div className="lg:col-span-2 flex flex-col gap-6">
+            {/* Registration Trend Card Skeleton */}
+            <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border rounded-2xl p-6 shadow-sm flex flex-col gap-4">
+              <div>
+                <Skeleton className="h-4 w-40 mb-2" />
+                <Skeleton className="h-3 w-64" />
+              </div>
+              <Skeleton className="h-[160px] w-full" />
+            </div>
+
+            {/* Categories Card Skeleton */}
+            <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border rounded-2xl p-6 shadow-sm flex flex-col gap-4">
+              <div>
+                <Skeleton className="h-4 w-44 mb-2" />
+                <Skeleton className="h-3 w-60" />
+              </div>
+              <div className="flex flex-col gap-4 mt-2">
+                {[1, 2, 3, 4].map(n => (
+                  <div key={n} className="flex flex-col gap-2">
+                    <div className="flex justify-between">
+                      <Skeleton className="h-3 w-20" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                    <Skeleton className="h-3 w-full" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="flex flex-col gap-6">
+            {/* Gender Distribution Card Skeleton */}
+            <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border rounded-2xl p-6 shadow-sm flex flex-col gap-4">
+              <div>
+                <Skeleton className="h-4 w-36 mb-2" />
+                <Skeleton className="h-3 w-56" />
+              </div>
+              <div className="flex items-center justify-center my-6">
+                <Skeleton className="w-[120px] h-[120px] rounded-full border-[12px] border-slate-100 dark:border-slate-800" />
+              </div>
+              <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-navy-border">
+                {[1, 2, 3].map(n => (
+                  <div key={n} className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="w-2.5 h-2.5 rounded-full" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                    <Skeleton className="h-3 w-8" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Recently Registered Card Skeleton */}
+            <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border rounded-2xl p-6 shadow-sm flex flex-col gap-4">
+              <div>
+                <Skeleton className="h-4 w-36 mb-2" />
+                <Skeleton className="h-3 w-56" />
+              </div>
+              <div className="flex flex-col gap-4">
+                {[1, 2, 3].map(n => (
+                  <div key={n} className="flex items-center gap-3">
+                    <Skeleton className="w-10 h-10 rounded-full" />
+                    <div className="flex-1 flex flex-col gap-1.5">
+                      <Skeleton className="h-3 w-20" />
+                      <Skeleton className="h-2.5 w-16" />
+                    </div>
+                    <Skeleton className="w-12 h-5 rounded-full" />
+                  </div>
+                ))}
+              </div>
+              <Skeleton className="h-8 w-full rounded-lg mt-2" />
+            </div>
+          </div>
         </div>
       </div>
     );

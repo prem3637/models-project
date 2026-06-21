@@ -8,20 +8,27 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        slate: {
+          50: 'var(--color-slate-50)',
+          100: 'var(--color-slate-100)',
+          150: 'var(--color-slate-150)',
+          200: 'var(--color-slate-200)',
+          300: 'var(--color-slate-300)',
+        },
         navy: {
-          50: '#f0f4f8',
-          100: '#d9e2ec',
-          200: '#bcccdc',
-          300: '#9fb3c8',
-          400: '#829ab1',
-          500: '#627d98',
-          600: '#486581',
-          700: '#334e68',
-          800: '#243b53',
-          900: '#102a43',
-          950: '#0b0f19', // Deep dark blue background
-          card: '#121829', // Elevate cards background
-          border: '#1d2433', // Deep navy borders
+          50: '#faf6f0',
+          100: '#f2eae1',
+          200: '#e4d5c5',
+          300: '#d3bea8',
+          400: '#bfa487',
+          500: '#ab8e6d',
+          600: '#8d7151',
+          700: '#70593f',
+          800: '#54422f',
+          900: '#392c1f',
+          950: '#050508', // Luxury deep obsidian black background with a tiny violet tint
+          card: '#0f0b18', // Sleek elevated dark purple cards
+          border: '#22163b', // Subtle amethyst border
         },
         dark: {
           50: '#f6f6f6',
@@ -37,17 +44,17 @@ module.exports = {
           950: '#0f0f10', // Deep black for layout
         },
         accent: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
-          950: '#082f49',
+          50: 'var(--color-accent-50)',
+          100: 'var(--color-accent-100)',
+          200: 'var(--color-accent-200)',
+          300: 'var(--color-accent-300)',
+          400: 'var(--color-accent-400)',
+          500: 'var(--color-accent-500)',
+          600: 'var(--color-accent-600)',
+          700: 'var(--color-accent-700)',
+          800: 'var(--color-accent-800)',
+          900: 'var(--color-accent-900)',
+          950: 'var(--color-accent-950)',
         }
       },
       fontFamily: {

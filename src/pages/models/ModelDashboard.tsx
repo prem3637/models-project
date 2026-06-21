@@ -232,20 +232,20 @@ export const ModelDashboard: React.FC = () => {
         </div>
 
         {/* Average Age Card */}
-        <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl flex items-center justify-between shadow-sm hover:border-sky-500/25 dark:hover:border-sky-500/30 transition-all duration-200 relative overflow-hidden group">
+        <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl flex items-center justify-between shadow-sm hover:border-accent-500/25 dark:hover:border-accent-500/30 transition-all duration-200 relative overflow-hidden group">
           <div className="flex flex-col gap-1 z-10">
             <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Average Age</span>
             <span className="text-3xl font-black text-slate-900 dark:text-white">
               {avgAge} <span className="text-xs font-bold text-slate-400 dark:text-slate-500">yrs</span>
             </span>
-            <span className="text-[10px] text-sky-600 dark:text-sky-400 font-bold uppercase tracking-wider mt-1">21 - 30 range</span>
+            <span className="text-[10px] text-accent-600 dark:text-accent-400 font-bold uppercase tracking-wider mt-1">21 - 30 range</span>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-sky-50 dark:bg-sky-950/30 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-800/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+          <div className="w-12 h-12 rounded-xl bg-accent-50 dark:bg-accent-950/30 text-accent-600 dark:text-accent-400 border border-accent-100 dark:border-accent-800/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
           </div>
-          <div className="absolute bottom-0 inset-x-0 h-4 bg-gradient-to-t from-sky-500/5 to-transparent pointer-events-none" />
+          <div className="absolute bottom-0 inset-x-0 h-4 bg-gradient-to-t from-accent-500/5 to-transparent pointer-events-none" />
         </div>
 
         {/* Average Height Card */}
@@ -283,8 +283,8 @@ export const ModelDashboard: React.FC = () => {
                 <defs>
                   {/* Area gradient */}
                   <linearGradient id="chartAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.35" />
-                    <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.00" />
+                    <stop offset="0%" stopColor="#ab8e6d" stopOpacity="0.35" />
+                    <stop offset="100%" stopColor="#ab8e6d" stopOpacity="0.00" />
                   </linearGradient>
                 </defs>
 
@@ -313,7 +313,7 @@ export const ModelDashboard: React.FC = () => {
                   <path
                     d={linePath}
                     fill="none"
-                    className="stroke-accent-500"
+                    stroke="#ab8e6d"
                     strokeWidth={3}
                     strokeLinecap="round"
                   />
@@ -327,7 +327,8 @@ export const ModelDashboard: React.FC = () => {
                       cx={p.x}
                       cy={p.y}
                       r={hoveredPoint?.month === p.month ? 6 : 4}
-                      className="fill-white dark:fill-navy-card stroke-accent-500 transition-all duration-150"
+                      className="fill-white dark:fill-navy-card transition-all duration-150"
+                      stroke="#ab8e6d"
                       strokeWidth={3}
                     />
 
@@ -352,7 +353,7 @@ export const ModelDashboard: React.FC = () => {
                     x={p.x}
                     y={svgHeight - 4}
                     textAnchor="middle"
-                    className="fill-slate-450 dark:fill-slate-500 text-[10px] font-bold"
+                    className="fill-slate-500 dark:fill-slate-300 text-[10px] font-bold"
                   >
                     {p.month}
                   </text>
@@ -388,7 +389,7 @@ export const ModelDashboard: React.FC = () => {
                   <div key={label} className="flex flex-col gap-1.5">
                     <div className="flex justify-between text-xs font-semibold">
                       <span className="text-slate-800 dark:text-slate-200 font-bold">{label}</span>
-                      <span className="text-slate-500 dark:text-slate-450">
+                      <span className="text-slate-500 dark:text-slate-300">
                         {count} {count === 1 ? 'model' : 'models'} ({percent}%)
                       </span>
                     </div>

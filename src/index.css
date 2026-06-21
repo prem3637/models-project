@@ -5,6 +5,50 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Accent Scale: Champagne Gold / Bronze */
+    --color-accent-50: #faf6f0;
+    --color-accent-100: #f2eae1;
+    --color-accent-200: #e4d5c5;
+    --color-accent-300: #d3bea8;
+    --color-accent-400: #bfa487;
+    --color-accent-500: #ab8e6d;
+    --color-accent-600: #5a4531; /* Deep chocolate bronze for high contrast button backgrounds */
+    --color-accent-700: #453322; /* Darker chocolate bronze for button hovers */
+    --color-accent-800: #54422f;
+    --color-accent-900: #392c1f;
+    --color-accent-950: #211912;
+
+    /* Slate Scale: Neutral Warm Beige/Off-white */
+    --color-slate-50: #faf9f6;
+    --color-slate-100: #f4efea;
+    --color-slate-150: #eae2d8;
+    --color-slate-200: #dfd9d0; /* Darker sand-beige for visible borders */
+    --color-slate-300: #cbbfae; /* More defined disabled and hover border sand-beige */
+  }
+
+  .dark {
+    /* Accent Scale: Amethyst Purple / Violet */
+    --color-accent-50: #1a0f2e;
+    --color-accent-100: #2b174b;
+    --color-accent-200: #3f1e6b;
+    --color-accent-300: #c084fc; /* Bright lilac purple text/icons (was dark purple) */
+    --color-accent-400: #c084fc;
+    --color-accent-500: #a855f7;
+    --color-accent-600: #9333ea;
+    --color-accent-700: #7e22ce;
+    --color-accent-800: #6b21a8;
+    --color-accent-900: #581c87;
+    --color-accent-950: #1c0e35; /* Deep dark purple background highlight (was #3b0764 - too bright/low contrast) */
+
+    /* Slate Scale in Dark Mode: High contrast crisp white and cool grays */
+    --color-slate-50: #ffffff;  /* Pure white */
+    --color-slate-100: #fafafa; /* Off-white */
+    --color-slate-150: #27272a; /* Dark gray for borders/dividers */
+    --color-slate-200: #f4f4f5; /* Clean high-contrast white text (was dark border color) */
+    --color-slate-300: #ffffff; /* White text for table cell contents as requested! */
+  }
+
   body {
     @apply bg-slate-50 text-slate-900 antialiased dark:bg-navy-950 dark:text-slate-100 transition-colors duration-200;
     font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -63,9 +107,9 @@ input[type="range"]::-webkit-slider-thumb {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #0ea5e9;
+  background: var(--color-accent-500);
   cursor: pointer;
-  box-shadow: 0 0 8px rgba(14, 165, 233, 0.4);
+  box-shadow: 0 0 8px var(--color-accent-500);
   transition: transform 0.1s;
 }
 

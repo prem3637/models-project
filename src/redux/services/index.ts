@@ -5,7 +5,7 @@ import {
     FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
 import { logout } from "../slices/auth";
-import { MODEL_MANAGEMENT, TAG_CURRENT_USER } from "../api-tags";
+import { MODEL_MANAGEMENT, TAG_CURRENT_USER, TAG_ROLES, TAG_ROLES_STAT } from "../api-tags";
 import envConfig from "../../config";
 
 const rawBaseQuery = fetchBaseQuery({
@@ -38,7 +38,7 @@ const baseQueryWithAuthGuard: BaseQueryFn<
 
 export const modelsApi = createApi({
     reducerPath: MODEL_MANAGEMENT,
-    tagTypes: [TAG_CURRENT_USER],
+    tagTypes: [TAG_CURRENT_USER, TAG_ROLES_STAT, TAG_ROLES],
     baseQuery: baseQueryWithAuthGuard,
     endpoints: () => ({}),
 });

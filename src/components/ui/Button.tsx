@@ -19,13 +19,13 @@ export const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props
 }) => {
-  const baseStyles = 'inline-flex items-center justify-center font-medium transition-all duration-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseStyles = 'inline-flex items-center justify-center font-bold tracking-wide uppercase text-xs transition-all duration-200 rounded-lg focus:outline-none disabled:cursor-not-allowed active:scale-[0.98] select-none';
   
   const variants = {
-    primary: 'bg-accent-600 hover:bg-accent-700 text-white shadow-lg shadow-accent-500/20 focus:ring-accent-500 border border-transparent',
-    secondary: 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 focus:ring-slate-500',
-    danger: 'bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-500/20 focus:ring-red-500 border border-transparent',
-    ghost: 'hover:bg-slate-100 text-slate-600 hover:text-slate-950 focus:ring-slate-500 border border-transparent',
+    primary: 'bg-accent-600 hover:bg-accent-700 text-white disabled:bg-slate-200 disabled:text-slate-700 dark:disabled:bg-navy-card/45 dark:disabled:text-slate-500 shadow-sm hover:shadow border border-transparent',
+    secondary: 'bg-white hover:bg-slate-100/50 text-slate-700 border border-slate-200 hover:border-slate-300 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 dark:bg-navy-card dark:hover:bg-slate-200/5 dark:text-slate-200 dark:border-navy-border dark:disabled:bg-navy-950/20 dark:disabled:text-slate-600 dark:disabled:border-navy-border/40',
+    danger: 'bg-red-650 hover:bg-red-700 text-white disabled:bg-slate-200 disabled:text-slate-500 dark:disabled:bg-navy-card/45 dark:disabled:text-slate-600 shadow-sm hover:shadow border border-transparent',
+    ghost: 'hover:bg-slate-100 text-slate-600 hover:text-slate-950 disabled:text-slate-400 dark:text-slate-400 dark:hover:bg-slate-200/5 dark:hover:text-slate-100 dark:disabled:text-slate-600 border border-transparent',
   };
 
   const sizes = {

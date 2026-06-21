@@ -23,7 +23,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   return (
     <aside
-      className={`fixed inset-y-0 left-0 bg-white dark:bg-navy-card border-r border-slate-200 dark:border-navy-border flex flex-col z-50 transition-all duration-300 overflow-hidden ${
+      className={`fixed inset-y-0 left-0 bg-slate-100 dark:bg-navy-card border-r border-slate-200 dark:border-navy-border flex flex-col z-50 transition-all duration-300 overflow-hidden ${
         sidebarOpen ? 'w-64 translate-x-0' : 'w-20 -translate-x-full md:translate-x-0 md:w-20'
       }`}
     >

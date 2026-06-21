@@ -86,12 +86,12 @@ export const SidebarLink: React.FC<SidebarLinkProps> = ({
           onClick={onToggleSettings}
           className={`w-full flex items-center justify-between px-3 py-3 rounded-lg text-sm transition-all duration-200 ${
             isActive
-              ? 'bg-accent-50 dark:bg-white/10 text-accent-700 dark:text-white font-semibold'
-              : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
+              ? 'bg-slate-200/60 dark:bg-white/10 text-slate-800 dark:text-white font-semibold'
+              : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200/35 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           <div className="flex items-center gap-4">
-            <span className={`shrink-0 ${isActive ? 'text-accent-600 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>
+            <span className={`shrink-0 ${isActive ? 'text-slate-700 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>
               {getIcon(item.icon)}
             </span>
             {sidebarOpen && <span className="whitespace-nowrap">{item.title}</span>}
@@ -112,8 +112,8 @@ export const SidebarLink: React.FC<SidebarLinkProps> = ({
                   to={child.path}
                   className={`flex items-center gap-4 px-3 py-2 rounded-lg text-xs transition-all duration-200 ${
                     isChildActive
-                      ? 'bg-accent-50 dark:bg-white/10 text-accent-700 dark:text-white font-semibold border-r-4 border-accent-600 dark:border-white'
-                      : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
+                      ? 'bg-slate-200/60 dark:bg-white/10 text-slate-800 dark:text-white font-semibold border-r-4 border-accent-600 dark:border-white'
+                      : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200/35 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
                   <span>{child.title}</span>
@@ -131,11 +131,11 @@ export const SidebarLink: React.FC<SidebarLinkProps> = ({
       to={item.path}
       className={`flex items-center gap-4 px-3 py-3 rounded-lg text-sm transition-all duration-200 ${
         isActive
-          ? 'bg-accent-50 dark:bg-white/10 text-accent-700 dark:text-white font-semibold border-r-4 border-accent-600 dark:border-white'
-          : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
+          ? 'bg-slate-200/60 dark:bg-white/10 text-slate-800 dark:text-white font-semibold border-r-4 border-accent-600 dark:border-white'
+          : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200/35 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
       }`}
     >
-      <span className={`shrink-0 ${isActive ? 'text-accent-600 dark:text-accent-400' : 'text-slate-400 dark:text-slate-500'}`}>
+      <span className={`shrink-0 ${isActive ? 'text-slate-700 dark:text-accent-400' : 'text-slate-400 dark:text-slate-500'}`}>
         {getIcon(item.icon)}
       </span>
       {sidebarOpen && <span className="whitespace-nowrap">{item.title}</span>}

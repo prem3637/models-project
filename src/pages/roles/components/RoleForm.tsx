@@ -303,7 +303,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({ selectedRole, onSuccess, onC
                 return (
                   <div key={m.key} className="flex justify-between items-center text-xs font-semibold">
                     <span className="text-slate-650 dark:text-slate-350">{m.label}</span>
-                    <span className="text-slate-500 dark:text-slate-450">{checked}/{total}</span>
+                    <span className="text-slate-500 dark:text-slate-300">{checked}/{total}</span>
                   </div>
                 );
               })}
@@ -336,7 +336,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({ selectedRole, onSuccess, onC
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[550px] text-xs text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-50 dark:bg-navy-950/40 border-b border-slate-200 dark:border-navy-border text-slate-500 dark:text-slate-455 font-bold uppercase tracking-wider">
+                    <tr className="bg-slate-50 dark:bg-navy-950/40 border-b border-slate-200 dark:border-navy-border text-slate-500 dark:text-slate-300 font-bold uppercase tracking-wider">
                       <th className="py-4 px-6 font-bold">Module</th>
                       <th className="py-4 px-5 text-center font-bold">View</th>
                       <th className="py-4 px-5 text-center font-bold">Create</th>

@@ -55,7 +55,7 @@ export const getUserColumns = ({ onEdit, onDelete, ability }: UserColumnsProps) 
             {user.avatarUrl ? (
               <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full bg-accent-100 text-accent-700 flex items-center justify-center font-bold text-sm">
+              <div className="w-full h-full bg-accent-100 text-accent-700 dark:bg-accent-950 dark:text-accent-300 flex items-center justify-center font-bold text-sm">
                 {user.name[0]}
               </div>
             )}

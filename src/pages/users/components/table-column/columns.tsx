@@ -90,7 +90,7 @@ export const getUserColumns = ({ onEdit, onDelete, ability }: UserColumnsProps) 
       <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
         info.getValue() === 'Active'
           ? 'bg-green-50 text-green-700 border-green-200'
-          : 'bg-red-50 text-red-650 border-red-200'
+          : 'bg-red-50 text-red-600 border-red-200'
       }`}>
         {info.getValue()}
       </span>
@@ -124,7 +124,7 @@ export const getUserColumns = ({ onEdit, onDelete, ability }: UserColumnsProps) 
             <button
               onClick={() => onEdit(user)}
               title="Edit User"
-              className="p-1.5 rounded bg-slate-100 hover:bg-accent-50 text-slate-600 hover:text-accent-600 transition-colors border border-slate-200 cursor-pointer"
+              className="p-1.5 rounded border border-transparent text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 hover:bg-amber-50 hover:border-amber-200/50 dark:hover:bg-amber-950/20 dark:hover:border-amber-900/30 transition-colors cursor-pointer"
             >
               <Edit className="w-3.5 h-3.5" />
             </button>
@@ -133,7 +133,7 @@ export const getUserColumns = ({ onEdit, onDelete, ability }: UserColumnsProps) 
             <button
               onClick={() => onDelete(user)}
               title="Delete User"
-              className="p-1.5 rounded bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-650 transition-colors border border-slate-200 cursor-pointer"
+              className="p-1.5 rounded border border-transparent text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 hover:border-red-200/50 dark:hover:bg-red-950/20 dark:hover:border-red-900/30 transition-colors cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>

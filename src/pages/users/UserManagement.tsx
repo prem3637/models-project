@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   useReactTable,
   getCoreRowModel,
@@ -11,19 +12,16 @@ import { useUsers, useDeleteUser } from './usersHooks';
 import { SystemUser } from './usersDb';
 import { useAppAbility } from '../../context/AbilityContext';
 import Button from '../../components/ui/Button';
-import NestedDrawer from '../../components/ui/NestedDrawer';
 import { DataTable } from '../../components/ui/data-table';
-import UserForm from './components/UserForm';
 import { getUserColumns, getRoleMeta } from './components/table-column/columns';
 import { Search, Plus } from 'lucide-react';
 
 export const UserManagement: React.FC = () => {
   const ability = useAppAbility();
+  const navigate = useNavigate();
   const { data: users = [], isLoading } = useUsers();
   const deleteUser = useDeleteUser();
 
-  const [drawerOpen, setDrawerOpen]   = useState(false);
-  const [editingUser, setEditingUser] = useState<SystemUser | undefined>();
   const [search, setSearch]           = useState('');
   const [roleFilter, setRoleFilter]   = useState('');
   const [sorting, setSorting]         = useState<SortingState>([]);
@@ -39,9 +37,8 @@ export const UserManagement: React.FC = () => {
     });
   };
 
-  const openCreate  = () => { setEditingUser(undefined); setDrawerOpen(true); };
-  const openEdit    = (u: SystemUser) => { setEditingUser(u); setDrawerOpen(true); };
-  const closeDrawer = () => { setDrawerOpen(false); setEditingUser(undefined); };
+  const openCreate  = () => { navigate('/users/new'); };
+  const openEdit    = (u: SystemUser) => { navigate(`/users/${u.id}/edit`); };
 
   const handleDelete = (u: SystemUser) => {
     if (window.confirm(`Remove user "${u.name}" from the system?`)) deleteUser.mutate(u.id);
@@ -172,17 +169,6 @@ export const UserManagement: React.FC = () => {
           minHeight="200px"
         />
       </div>
-
-      {/* ── Drawer: Create / Edit User ─────────────────────────────────── */}
-      <NestedDrawer
-        isOpen={drawerOpen}
-        onClose={closeDrawer}
-        title={editingUser ? 'Edit User & Role' : 'Create New User'}
-        stackIndex={0}
-        size="md"
-      >
-        <UserForm editing={editingUser} onSuccess={closeDrawer} />
-      </NestedDrawer>
     </div>
   );
 };

@@ -13,8 +13,6 @@ import { RBCModel, FilterParams } from './mockDb';
 import { useAppAbility } from '../../context/AbilityContext';
 import Button from '../../components/ui/Button';
 import SearchDropdown from '../../components/ui/SearchDropdown';
-import NestedDrawer from '../../components/ui/NestedDrawer';
-import ModelForm from './components/ModelForm';
 import { DataTable } from '../../components/ui/data-table';
 import { getModelColumns } from './components/table-column/columns';
 import { Search, Plus } from 'lucide-react';
@@ -101,10 +99,6 @@ export const ModelList: React.FC = () => {
     handlePaginationChange(p => ({ ...p, pageIndex: 0 }));
   };
 
-  // Drawer Form State
-  const [editingModelId, setEditingModelId] = useState<string | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-
   const handleResetFilters = () => {
     updateFilter(() => ({
       search: '',
@@ -132,18 +126,11 @@ export const ModelList: React.FC = () => {
   };
 
   const handleOpenEditDirect = (model: RBCModel) => {
-    setEditingModelId(model.id);
-    setIsFormOpen(true);
+    navigate(`/models/${model.id}/edit`);
   };
 
   const handleOpenAddDirect = () => {
-    setEditingModelId(null);
-    setIsFormOpen(true);
-  };
-
-  const handleFormSuccess = () => {
-    setIsFormOpen(false);
-    setEditingModelId(null);
+    navigate('/models/new');
   };
 
   // Table Columns Definition
@@ -351,24 +338,6 @@ export const ModelList: React.FC = () => {
         noResultMessage="No talent matching the active filters was found"
         minHeight="350px"
       />
-
-      {/* Drawer: Add Form (Direct Edit) */}
-      <NestedDrawer
-        isOpen={isFormOpen}
-        onClose={() => {
-          setIsFormOpen(false);
-          setEditingModelId(null);
-        }}
-        title={editingModelId ? 'Edit Model Profile' : 'Register New Talent'}
-        stackIndex={0}
-        size="lg"
-      >
-        <ModelForm
-          modelId={editingModelId || undefined}
-          initialValues={editingModelId ? models.find(m => m.id === editingModelId) : undefined}
-          onSuccess={handleFormSuccess}
-        />
-      </NestedDrawer>
     </div>
   );
 };

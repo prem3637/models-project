@@ -71,10 +71,10 @@ export function DataTable<TData>({
                                 header.getContext()
                               )}
                             </span>
-                            {sortDirection === "asc" && (
+                            {typeof header.column.columnDef.header === "string" && sortDirection === "asc" && (
                               <span className="text-accent-500 font-bold">↑</span>
                             )}
-                            {sortDirection === "desc" && (
+                            {typeof header.column.columnDef.header === "string" && sortDirection === "desc" && (
                               <span className="text-accent-500 font-bold">↓</span>
                             )}
                           </div>

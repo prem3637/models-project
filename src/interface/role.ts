@@ -21,6 +21,7 @@ export interface RoleEntityResponse {
     permissions: PermissionItem[];
     status: "Active" | "Inactive";
     isVisible: boolean;
+    assignedUsers?: number;
     createdAt: string;
     updatedAt: string;
 }

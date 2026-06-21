@@ -11,6 +11,17 @@ export const useUsers = () => {
   });
 };
 
+export const useUser = (id: string, enabled = true) => {
+  return useQuery<SystemUser | undefined, Error>({
+    queryKey: ['user', id],
+    queryFn: async () => {
+      await new Promise(r => setTimeout(r, 400));
+      return usersDb.getById(id);
+    },
+    enabled: enabled && !!id,
+  });
+};
+
 export const useCreateUser = () => {
   const qc = useQueryClient();
   return useMutation<SystemUser, Error, Omit<SystemUser, 'id' | 'createdAt'>>({

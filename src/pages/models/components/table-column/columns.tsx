@@ -99,7 +99,7 @@ export const getModelColumns = ({ onOpenDetails, onOpenEdit, onDelete, ability }
           <button
             onClick={() => onOpenDetails(model)}
             title="View Profile"
-            className="p-1.5 rounded bg-slate-100 dark:bg-[#0f1422] hover:bg-slate-205 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 transition-colors border border-slate-200 dark:border-navy-border cursor-pointer"
+            className="p-1.5 rounded border border-transparent text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 hover:border-green-200/50 dark:hover:bg-green-950/20 dark:hover:bg-green-900/30 transition-colors cursor-pointer"
           >
             <Eye className="w-3.5 h-3.5" />
           </button>
@@ -107,7 +107,7 @@ export const getModelColumns = ({ onOpenDetails, onOpenEdit, onDelete, ability }
             <button
               onClick={() => onOpenEdit(model)}
               title="Edit Details"
-              className="p-1.5 rounded bg-slate-100 dark:bg-[#0f1422] hover:bg-accent-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-accent-600 dark:hover:text-accent-405 transition-colors border border-slate-200 dark:border-navy-border cursor-pointer"
+              className="p-1.5 rounded border border-transparent text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 hover:bg-amber-50 hover:border-amber-200/50 dark:hover:bg-amber-950/20 dark:hover:bg-amber-900/30 transition-colors cursor-pointer"
             >
               <Edit className="w-3.5 h-3.5" />
             </button>
@@ -116,7 +116,7 @@ export const getModelColumns = ({ onOpenDetails, onOpenEdit, onDelete, ability }
             <button
               onClick={() => onDelete(model.id, model.name)}
               title="Delete Profile"
-              className="p-1.5 rounded bg-slate-100 dark:bg-[#0f1422] hover:bg-red-50 dark:hover:bg-red-950/20 text-slate-655 dark:text-slate-355 hover:text-red-600 dark:hover:text-red-400 transition-colors border border-slate-200 dark:border-navy-border cursor-pointer"
+              className="p-1.5 rounded border border-transparent text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 hover:border-red-200/50 dark:hover:bg-red-950/20 dark:hover:bg-red-900/30 transition-colors cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>

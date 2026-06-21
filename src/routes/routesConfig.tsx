@@ -4,8 +4,15 @@ import ForgotPassword from '../pages/auth/ForgotPassword';
 import ModelDashboard from '../pages/models/ModelDashboard';
 import ModelList from '../pages/models/ModelList';
 import ModelDetails from '../pages/models/ModelDetails';
+import ModelCreatePage from '../pages/models/ModelCreatePage';
+import ModelEditPage from '../pages/models/ModelEditPage';
 import UserManagement from '../pages/users/UserManagement';
+import UserCreatePage from '../pages/users/UserCreatePage';
+import UserEditPage from '../pages/users/UserEditPage';
 import RoleConfiguration from '../pages/roles/RoleConfiguration';
+import RoleCreatePage from '../pages/roles/RoleCreatePage';
+import RoleEditPage from '../pages/roles/RoleEditPage';
+import RoleViewPage from '../pages/roles/RoleViewPage';
 import Profile from '../pages/admin/Profile';
 
 export interface RouteConfig {
@@ -64,6 +71,24 @@ export const routesConfig: RouteConfig[] = [
     }
   },
   {
+    path: '/models/new',
+    element: ModelCreatePage,
+    isPrivate: true,
+    requiredPermission: {
+      action: 'create',
+      subject: 'models'
+    }
+  },
+  {
+    path: '/models/:id/edit',
+    element: ModelEditPage,
+    isPrivate: true,
+    requiredPermission: {
+      action: 'update',
+      subject: 'models'
+    }
+  },
+  {
     path: '/models/:id',
     element: ModelDetails,
     isPrivate: true,
@@ -87,6 +112,24 @@ export const routesConfig: RouteConfig[] = [
     }
   },
   {
+    path: '/users/new',
+    element: UserCreatePage,
+    isPrivate: true,
+    requiredPermission: {
+      action: 'create',
+      subject: 'users'
+    }
+  },
+  {
+    path: '/users/:id/edit',
+    element: UserEditPage,
+    isPrivate: true,
+    requiredPermission: {
+      action: 'update',
+      subject: 'users'
+    }
+  },
+  {
     path: '/roles',
     element: RoleConfiguration,
     isPrivate: true,
@@ -98,6 +141,33 @@ export const routesConfig: RouteConfig[] = [
       id: 'roles',
       title: 'Roles',
       icon: 'Roles'
+    }
+  },
+  {
+    path: '/roles/new',
+    element: RoleCreatePage,
+    isPrivate: true,
+    requiredPermission: {
+      action: 'create',
+      subject: 'roles'
+    }
+  },
+  {
+    path: '/roles/:id/edit',
+    element: RoleEditPage,
+    isPrivate: true,
+    requiredPermission: {
+      action: 'update',
+      subject: 'roles'
+    }
+  },
+  {
+    path: '/roles/:id',
+    element: RoleViewPage,
+    isPrivate: true,
+    requiredPermission: {
+      action: 'read',
+      subject: 'roles'
     }
   },
   {

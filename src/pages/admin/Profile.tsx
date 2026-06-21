@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import toast from 'react-hot-toast';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { useUpdateProfileMutation } from '../../redux/services/auth';
 import { updateProfileLocal } from '../../redux/slices/auth';
@@ -65,10 +66,10 @@ export const Profile: React.FC = () => {
         bio: data.bio
       } as any));
 
-      alert('Profile updated successfully!');
+      toast.success('Profile updated successfully!');
     } catch (err) {
       console.error(err);
-      alert('Failed to update profile: ' + ((err as any)?.data?.message || 'Unknown error'));
+      toast.error((err as any)?.data?.message || (err as any)?.message || 'Failed to update profile');
     }
   };
 

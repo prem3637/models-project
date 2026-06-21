@@ -4,8 +4,6 @@ import { useModel, useDeleteModel } from './modelsHooks';
 import { useAppAbility } from '../../context/AbilityContext';
 import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
-import NestedDrawer from '../../components/ui/NestedDrawer';
-import ModelForm from './components/ModelForm';
 
 export const ModelDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,9 +12,6 @@ export const ModelDetails: React.FC = () => {
 
   const { data: model, isLoading, error } = useModel(id || '');
   const deleteMutation = useDeleteModel();
-
-  // Drawer Edit Form state
-  const [isEditOpen, setIsEditOpen] = useState(false);
 
   // Gallery view mode: 'grid' | 'list'
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -159,7 +154,7 @@ export const ModelDetails: React.FC = () => {
         <div className="flex items-center gap-2">
           {ability.can('update', 'models') && (
             <Button
-              onClick={() => setIsEditOpen(true)}
+              onClick={() => navigate(`/models/${model.id}/edit`)}
               variant="secondary"
               size="sm"
               className="dark:bg-[#0f1422] dark:border-navy-border dark:text-slate-350 dark:hover:bg-slate-800"
@@ -392,20 +387,7 @@ export const ModelDetails: React.FC = () => {
         </div>
       </div>
 
-      {/* Sliding Drawer: Edit Profile Drawer */}
-      <NestedDrawer
-        isOpen={isEditOpen}
-        onClose={() => setIsEditOpen(false)}
-        title="Edit Model Profile"
-        stackIndex={0}
-        size="lg"
-      >
-        <ModelForm
-          modelId={model.id}
-          initialValues={model}
-          onSuccess={() => setIsEditOpen(false)}
-        />
-      </NestedDrawer>
+
 
       {/* Lightbox Overlay Modal */}
       {activeImageIndex !== null && model.images && (

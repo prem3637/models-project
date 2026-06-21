@@ -66,7 +66,7 @@ export const rolesApi = modelsApi.injectEndpoints({
             ],
             query: ({ id, ...body }) => ({
                 url: `/roles/${id}`,
-                method: "PATCH",
+                method: "PUT",
                 body,
             }),
         }),
@@ -100,7 +100,7 @@ export const rolesApi = modelsApi.injectEndpoints({
             }),
         }),
         getPermissionMatrix: builder.query<PermissionMatrixResponse, void>({
-            providesTags: [{ type: TAG_ROLES, id: "PERMISSION_MATRIX" }],
+            providesTags: [{ type: TAG_ROLES as typeof TAG_ROLES, id: "PERMISSION_MATRIX" }],
             query: () => ({
                 url: `/roles/permission/matrix`,
                 method: "GET",

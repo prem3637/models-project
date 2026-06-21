@@ -1,81 +1,166 @@
 import React from 'react';
-import { createColumnHelper } from '@tanstack/react-table';
-import Button from '../../../../components/ui/Button';
+import { ColumnDef } from '@tanstack/react-table';
+import { Eye, Edit2, Trash2, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 
 export interface RoleRowData {
+  roleId: string;
   roleKey: string;
   label: string;
   desc: string;
   userCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
-const columnHelper = createColumnHelper<RoleRowData>();
-
-interface RoleColumnsProps {
-  onConfigure: (roleKey: string) => void;
-  onDelete: (roleKey: string) => void;
-  getRoleMeta: (r: string) => any;
+declare module "@tanstack/react-table" {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface TableMeta<TData> {
+    onViewRole?: (roleId: string, roleName: string) => void;
+    onEditRole?: (roleId: string, roleName: string) => void;
+    onDeleteRole?: (roleId: string, roleName: string, userCount: number) => void;
+  }
 }
 
-export const getRoleColumns = ({ onConfigure, onDelete, getRoleMeta }: RoleColumnsProps) => [
-  columnHelper.accessor('label', {
-    header: 'Role',
-    cell: info => {
-      const row = info.row.original;
-      const rm = getRoleMeta(row.roleKey);
+const SortIcon = ({ column }: { column: any }) => {
+  const sorted = column.getIsSorted();
+
+  if (!sorted) return <ArrowUpDown className="w-3 h-3 text-gray-400" />;
+  if (sorted === "asc") return <ArrowUp className="w-3 h-3 text-accent-600 dark:text-accent-400" />;
+  return <ArrowDown className="w-3 h-3 text-accent-600 dark:text-accent-400" />;
+};
+
+export const getRoleColumns = (): ColumnDef<RoleRowData, any>[] => [
+  {
+    accessorKey: 'label',
+    header: () => (
+      <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+        Role
+      </span>
+    ),
+    cell: ({ getValue }) => (
+      <span className="font-extrabold uppercase text-slate-800 dark:text-slate-200">
+        {getValue<string>()}
+      </span>
+    ),
+    enableSorting: false
+  },
+  {
+    accessorKey: 'desc',
+    header: () => (
+      <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+        Description
+      </span>
+    ),
+    cell: ({ getValue }) => {
+      const desc = getValue<string>() || '';
       return (
-        <span className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest ${rm.bg} ${rm.color} border ${rm.border}`}>
-          {info.getValue()}
+        <span className="text-slate-500 dark:text-slate-400 font-medium leading-relaxed line-clamp-1" title={desc}>
+          {desc}
         </span>
       );
-    }
-  }),
-  columnHelper.accessor('desc', {
-    header: 'Description',
-    cell: info => (
-      <span className="text-slate-555 dark:text-slate-405 font-medium leading-relaxed">
-        {info.getValue()}
+    },
+    enableSorting: false
+  },
+  {
+    accessorKey: 'userCount',
+    header: () => (
+      <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+        Assigned Users
       </span>
-    )
-  }),
-  columnHelper.accessor('userCount', {
-    header: 'Assigned Users',
-    cell: info => (
+    ),
+    cell: ({ getValue }) => (
       <span className="font-bold text-slate-700 dark:text-slate-350">
-        {info.getValue()} {info.getValue() === 1 ? 'user' : 'users'}
+        {getValue<number>()} {getValue<number>() === 1 ? 'user' : 'users'}
+      </span>
+    ),
+    enableSorting: false
+  },
+  {
+    accessorKey: 'createdAt',
+    header: ({ column }) => (
+      <div className="flex gap-2 items-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+        Created At
+        <SortIcon column={column} />
+      </div>
+    ),
+    cell: ({ getValue }) => (
+      <span className="text-slate-600 dark:text-slate-400 font-medium">
+        {new Date(getValue<string>()).toLocaleDateString(undefined, {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        })}
       </span>
     )
-  }),
-  columnHelper.display({
+  },
+  {
+    accessorKey: 'updatedAt',
+    header: ({ column }) => (
+      <div className="flex gap-2 items-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+        Updated At
+        <SortIcon column={column} />
+      </div>
+    ),
+    cell: ({ getValue }) => (
+      <span className="text-slate-600 dark:text-slate-400 font-medium">
+        {new Date(getValue<string>()).toLocaleDateString(undefined, {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        })}
+      </span>
+    )
+  },
+  {
     id: 'actions',
-    header: 'Actions',
-    cell: info => {
-      const row = info.row.original;
-      const isDefault = ['admin', 'editor', 'viewer'].includes(row.roleKey);
+    header: () => (
+      <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+        Actions
+      </span>
+    ),
+    enableSorting: false,
+    cell: ({ row, table }) => {
+      const role = row.original;
+      const isDefault = ['admin', 'editor', 'viewer'].includes(role.roleKey);
 
       return (
-        <div className="flex items-center gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => onConfigure(row.roleKey)}
-            className="text-[10px] font-bold uppercase tracking-wider dark:bg-[#0f1422] dark:border-navy-border dark:text-slate-350 dark:hover:bg-slate-800 border cursor-pointer px-2.5 py-1.5"
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              table.options.meta?.onViewRole?.(role.roleId, role.label);
+            }}
+            className="p-1.5 rounded border border-transparent text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 hover:border-green-200/50 dark:hover:bg-green-950/20 dark:hover:border-green-900/30 transition-colors cursor-pointer"
+            title="View Details"
           >
-            Configure
-          </Button>
+            <Eye className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              table.options.meta?.onEditRole?.(role.roleId, role.label);
+            }}
+            className="p-1.5 rounded border border-transparent text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 hover:bg-amber-50 hover:border-amber-200/50 dark:hover:bg-amber-950/20 dark:hover:border-amber-900/30 transition-colors cursor-pointer"
+            title="Configure / Edit"
+          >
+            <Edit2 className="w-3.5 h-3.5" />
+          </button>
           
           {!isDefault && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => onDelete(row.roleKey)}
-              className="text-[10px] font-bold uppercase tracking-wider text-red-500 hover:text-red-655 dark:text-red-400 dark:hover:text-red-300 border border-red-200 hover:border-red-300 dark:border-red-950 dark:hover:border-red-900 dark:bg-[#1a0f0f] cursor-pointer px-2.5 py-1.5"
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                table.options.meta?.onDeleteRole?.(role.roleId, role.label, role.userCount);
+              }}
+              className="p-1.5 rounded border border-transparent text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 hover:border-red-200/50 dark:hover:bg-red-950/20 dark:hover:border-red-900/30 transition-colors cursor-pointer"
+              title="Delete Role"
             >
-              Delete
-            </Button>
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
           )}
         </div>
       );
     }
-  })
+  }
 ];

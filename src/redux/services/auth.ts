@@ -1,7 +1,7 @@
 
 import { TAG_CURRENT_USER } from "../api-tags";
 import { modelsApi } from ".";
-import { IUser, LoginRequest } from "../../interface/user";
+import { CreateUserRequest, IUser, LoginRequest, UserDetailResponse } from "../../interface/user";
 
 export const authApi = modelsApi.injectEndpoints({
     overrideExisting: true,
@@ -14,15 +14,7 @@ export const authApi = modelsApi.injectEndpoints({
                     method: "get",
                 };
             },
-            transformResponse: (response: any) => response.data,
-        }),
-
-        register: builder.mutation<any, any>({
-            query: (body) => ({
-                url: "/auth/register",
-                method: "POST",
-                body,
-            }),
+            transformResponse: (response: UserDetailResponse) => response.data,
         }),
 
         login: builder.mutation<IUser, LoginRequest>({
@@ -32,48 +24,23 @@ export const authApi = modelsApi.injectEndpoints({
                 method: "POST",
                 body,
             }),
-            transformResponse: (response: any) => response.data,
+            transformResponse: (response: UserDetailResponse) => response.data,
         }),
 
-        updateProfile: builder.mutation<any, any>({
+        updateProfile: builder.mutation<IUser, Partial<CreateUserRequest>>({
             invalidatesTags: [{ type: TAG_CURRENT_USER, id: "currentUsers" }],
             query: (body) => ({
                 url: "/auth/me",
-                method: "PATCH",
+                method: "PUT",
                 body,
             }),
-            transformResponse: (response: any) => response.data,
-        }),
-        forgotPassword: builder.mutation<void, { email: string }>({
-            query: (body) => ({
-                url: "/auth/forgot/password",
-                method: "POST",
-                body,
-            }),
-        }),
-        resetPassword: builder.mutation<void, { hash: string; password: string }>({
-            query: (body) => ({
-                url: "/auth/reset/password",
-                method: "POST",
-                body,
-            }),
-        }),
-        updateUserPassword: builder.mutation<void, any>({
-            query: ({ userId, ...body }) => ({
-                url: `/users/${userId}/update/password`,
-                method: "PATCH",
-                body,
-            }),
+            transformResponse: (response: UserDetailResponse) => response.data,
         }),
     }),
 });
 
 export const {
     useCurrentUserDataQuery,
-    useRegisterMutation,
     useLoginMutation,
     useUpdateProfileMutation,
-    useForgotPasswordMutation,
-    useResetPasswordMutation,
-    useUpdateUserPasswordMutation,
 } = authApi;

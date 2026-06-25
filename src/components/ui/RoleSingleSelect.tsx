@@ -45,6 +45,8 @@ const RoleSingleSelect: React.FC<RoleSingleSelectProps> = ({
   const currentPageItems = useAppSelector(selectCurrentPageRoles(query));
   const meta = useAppSelector(selectRolesMeta(query));
 
+
+
   const { accumulatedItems, handleLoadMore, handleSearch } =
     useInfiniteSelectSingle({
       currentPageItems,

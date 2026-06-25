@@ -79,7 +79,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         />
 
         {/* Dashboard Pages Content */}
-        <main className="flex-1 p-6 bg-slate-50 dark:bg-navy-950 overflow-y-auto min-w-0 transition-colors duration-200">
+        <main className="flex-1 px-[50px] py-6 bg-slate-50 dark:bg-navy-950 overflow-y-auto min-w-0 transition-colors duration-200">
           {children}
         </main>
       </div>

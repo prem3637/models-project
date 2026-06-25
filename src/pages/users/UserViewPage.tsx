@@ -1,11 +1,11 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Edit } from 'lucide-react';
 import { useGetUserDetailsQuery } from '../../redux/services/users';
 import UserForm from './components/UserForm';
 import Skeleton from '../../components/ui/Skeleton';
 
-export const UserEditPage: React.FC = () => {
+export const UserViewPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: userResponse, isLoading, error } = useGetUserDetailsQuery(id || '');
@@ -37,7 +37,7 @@ export const UserEditPage: React.FC = () => {
           </svg>
         </div>
         <h2 className="text-lg font-bold text-slate-800 dark:text-slate-150">User Not Found</h2>
-        <p className="text-xs text-slate-500 max-w-xs">The user you are trying to edit does not exist or has been removed.</p>
+        <p className="text-xs text-slate-500 max-w-xs">The user you are trying to view does not exist or has been removed.</p>
         <button
           onClick={() => navigate('/users')}
           className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold"
@@ -58,16 +58,26 @@ export const UserEditPage: React.FC = () => {
           <ArrowLeft className="w-4 h-4" />
           Back to Users list
         </button>
-        <div className="flex flex-col gap-1">
-          <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Edit User Details</h1>
-          <p className="text-xs text-slate-500">Update personal details, permissions, and roles for {user.fullName}.</p>
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">User Details</h1>
+            <p className="text-xs text-slate-500">View personal details, permissions, and roles for {user.fullName}.</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate(`/users/${user.id}/edit`)}
+            className="inline-flex items-center gap-1.5 text-xs font-bold tracking-wider text-accent-600 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300 transition-colors cursor-pointer w-fit focus:outline-none"
+          >
+            <Edit className="w-4 h-4" />
+            Edit User
+          </button>
         </div>
       </div>
       <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-5 rounded-2xl shadow-sm">
-        <UserForm editing={user} onSuccess={() => navigate('/users')} />
+        <UserForm editing={user} onSuccess={() => navigate('/users')} readOnly={true} />
       </div>
     </div>
   );
 };
 
-export default UserEditPage;
+export default UserViewPage;

@@ -3,7 +3,7 @@ import { baseResponse } from "./common";
 export interface IRole {
     id: string;
     name: string;
-    description: string;
+    status: string;
 }
 
 export interface IAddress {
@@ -28,6 +28,9 @@ export interface IUser {
     contactNumber: string;
     permissions: string[];
     token: string;
+    lastLogin: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 
@@ -58,4 +61,13 @@ export interface CreateUserRequest {
 
 export interface UserDetailResponse extends baseResponse {
     data: IUser
+}
+
+export interface UserListResponse extends baseResponse {
+    data: IUser[];
+}
+
+export interface UpdateUserRequest extends Omit<CreateUserRequest, 'password'> {
+    id: string;
+    password?: string;
 }

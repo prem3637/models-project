@@ -9,6 +9,7 @@ import ModelEditPage from '../pages/models/ModelEditPage';
 import UserManagement from '../pages/users/UserManagement';
 import UserCreatePage from '../pages/users/UserCreatePage';
 import UserEditPage from '../pages/users/UserEditPage';
+import UserViewPage from '../pages/users/UserViewPage';
 import RoleConfiguration from '../pages/roles/RoleConfiguration';
 import RoleCreatePage from '../pages/roles/RoleCreatePage';
 import RoleEditPage from '../pages/roles/RoleEditPage';
@@ -126,6 +127,15 @@ export const routesConfig: RouteConfig[] = [
     isPrivate: true,
     requiredPermission: {
       action: 'update',
+      subject: 'users'
+    }
+  },
+  {
+    path: '/users/:id',
+    element: UserViewPage,
+    isPrivate: true,
+    requiredPermission: {
+      action: 'read',
       subject: 'users'
     }
   },

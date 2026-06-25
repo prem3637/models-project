@@ -36,6 +36,25 @@ export const authApi = modelsApi.injectEndpoints({
             }),
             transformResponse: (response: UserDetailResponse) => response.data,
         }),
+
+        uploadProfilePicture: builder.mutation<IUser, { file?: File; remove?: boolean }>({
+            invalidatesTags: [{ type: TAG_CURRENT_USER, id: "currentUsers" }],
+            query: ({ file, remove }) => {
+                const formData = new FormData();
+                if (file) {
+                    formData.append("file", file);
+                }
+                if (remove) {
+                    formData.append("remove", "true");
+                }
+                return {
+                    url: "/auth/me/profile-picture",
+                    method: "PATCH",
+                    body: formData,
+                };
+            },
+            transformResponse: (response: UserDetailResponse) => response.data,
+        }),
     }),
 });
 
@@ -43,4 +62,5 @@ export const {
     useCurrentUserDataQuery,
     useLoginMutation,
     useUpdateProfileMutation,
+    useUploadProfilePictureMutation,
 } = authApi;

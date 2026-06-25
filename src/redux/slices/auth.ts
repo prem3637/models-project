@@ -62,6 +62,22 @@ export const authSlice = createSlice({
             },
         );
         builder.addMatcher(
+            authApi.endpoints.updateProfile.matchFulfilled,
+            (state, { payload }) => {
+                if (payload) {
+                    state.user = payload;
+                }
+            },
+        );
+        builder.addMatcher(
+            authApi.endpoints.uploadProfilePicture.matchFulfilled,
+            (state, { payload }) => {
+                if (payload) {
+                    state.user = payload;
+                }
+            },
+        );
+        builder.addMatcher(
             authApi.endpoints.login.matchRejected,
             (state, { payload }) => {
                 console.log(`Login failed`, payload);

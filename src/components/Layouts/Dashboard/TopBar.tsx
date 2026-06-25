@@ -1,22 +1,12 @@
 import React from 'react';
-
-interface User {
-  name?: string;
-  fullName?: string;
-  email: string;
-  role?: {
-    id: string;
-    name: string;
-    description: string;
-  };
-}
+import { IUser } from '../../../interface/user';
 
 interface TopBarProps {
   onToggleSidebar: () => void;
   pageTitle: string;
   darkMode: boolean;
   onToggleDarkMode: () => void;
-  user: User | null;
+  user: IUser | null;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -27,7 +17,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   user
 }) => {
   return (
-    <header className="h-16 bg-slate-100/80 dark:bg-navy-card/80 backdrop-blur-md border-b border-slate-200 dark:border-navy-border flex items-center justify-between px-6 sticky top-0 z-30 transition-colors duration-200">
+    <header className="h-16 bg-slate-100/80 dark:bg-navy-card/80 backdrop-blur-md border-b border-slate-200 dark:border-navy-border flex items-center justify-between px-[50px] sticky top-0 z-30 transition-colors duration-200">
       <div className="flex items-center gap-4">
         <button
           onClick={onToggleSidebar}
@@ -76,10 +66,10 @@ export const TopBar: React.FC<TopBarProps> = ({
         {/* Profile Avatar */}
         <div className="flex items-center gap-3 pl-2 border-l border-slate-200 dark:border-navy-border">
           <div className="w-8 h-8 rounded-full bg-accent-50 dark:bg-accent-950 text-accent-600 dark:text-accent-300 border border-accent-200 dark:border-accent-800/40 flex items-center justify-center font-bold text-xs shadow-sm">
-            {user ? (user.fullName ?? user.name ?? 'U').charAt(0) : 'U'}
+            {user ? (user.fullName ?? 'U').charAt(0) : 'U'}
           </div>
           <div className="hidden md:block text-left">
-            <p className="text-xs font-extrabold text-slate-800 dark:text-slate-200 leading-3">{user ? (user.fullName ?? user.name ?? 'User') : 'User'}</p>
+            <p className="text-xs font-extrabold text-slate-800 dark:text-slate-200 leading-3">{user ? (user.fullName ?? 'User') : 'User'}</p>
             <span className="text-[10px] text-slate-500 dark:text-slate-300 font-medium">{user ? user.email : 'user@agency.com'}</span>
           </div>
         </div>

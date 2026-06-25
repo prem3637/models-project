@@ -8,3 +8,5 @@ export const AUTH_KEY = "auth";
 export const TAG_CURRENT_USER = "currentUsers";
 export const TAG_ROLES = "roles"
 export const TAG_ROLES_STAT = "roles_stat";
+
+export const TAG_USERS = "Users"

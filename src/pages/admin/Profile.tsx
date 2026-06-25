@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,6 +11,7 @@ import SearchDropdown from '../../components/ui/SearchDropdown';
 import RoleSingleSelect from '../../components/ui/RoleSingleSelect';
 import { CreateUserRequest } from '../../interface/user';
 import PasswordStrengthMeter from '../../components/ui/PasswordStrengthMeter';
+import ProfileHeader from './components/ProfileHeader';
 
 const ProfileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -29,8 +30,7 @@ const ProfileSchema = z.object({
     country: z.string().min(1, 'Country is required')
   }),
   password: z.string().optional(),
-  confirmPassword: z.string().optional(),
-  profilePicture: z.string().optional()
+  confirmPassword: z.string().optional()
 }).refine((data) => {
   if (data.password && data.password.length > 0) {
     return data.password.length >= 8;
@@ -52,7 +52,7 @@ export const Profile: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
   const [updateProfileApi, { isLoading }] = useUpdateProfileMutation();
 
-  const { register, handleSubmit, reset, formState: { errors, isDirty }, watch, control, setValue } = useForm<ProfileFormData>({
+  const { register, handleSubmit, reset, formState: { errors, isDirty }, watch, control } = useForm<ProfileFormData>({
     resolver: zodResolver(ProfileSchema),
     defaultValues: {
       name: user?.fullName ?? '',
@@ -71,13 +71,11 @@ export const Profile: React.FC = () => {
         country: user?.address?.country ?? ''
       },
       password: '',
-      confirmPassword: '',
-      profilePicture: user?.profilePicture ?? ''
+      confirmPassword: ''
     }
   });
 
   const passwordValue = watch('password') || '';
-  const profilePictureValue = watch('profilePicture') || '';
 
   // Reset values when user changes (e.g. role switcher triggers new user info)
   useEffect(() => {
@@ -99,8 +97,7 @@ export const Profile: React.FC = () => {
           country: user.address?.country ?? ''
         },
         password: '',
-        confirmPassword: '',
-        profilePicture: user.profilePicture ?? ''
+        confirmPassword: ''
       });
     }
   }, [user, reset]);
@@ -115,7 +112,6 @@ export const Profile: React.FC = () => {
         role: data.role,
         status: data.status,
         bio: data.bio,
-        profilePicture: data.profilePicture || undefined,
         address: {
           addressLine1: data.address.addressLine1,
           addressLine2: data.address.addressLine2 || undefined,
@@ -163,32 +159,8 @@ export const Profile: React.FC = () => {
           country: user.address?.country ?? ''
         },
         password: '',
-        confirmPassword: '',
-        profilePicture: user.profilePicture ?? ''
+        confirmPassword: ''
       });
-    }
-  };
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [imgError, setImgError] = React.useState(false);
-
-  useEffect(() => {
-    setImgError(false);
-  }, [profilePictureValue]);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('Image size must be less than 5MB');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        setValue('profilePicture', base64String, { shouldDirty: true });
-      };
-      reader.readAsDataURL(file);
     }
   };
 
@@ -200,59 +172,7 @@ export const Profile: React.FC = () => {
         <span className="text-slate-700 dark:text-slate-300">Profile</span>
       </div>
 
-      {/* Profile Header Card */}
-      <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border rounded-2xl overflow-hidden shadow-sm transition-colors duration-200">
-        <div className="h-32 bg-gradient-to-r from-accent-600 to-indigo-600/80 relative" />
-        
-        <div className="px-6 pb-6 pt-4 flex flex-col sm:flex-row items-center sm:items-end gap-5 -mt-10 relative z-10">
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="w-24 h-24 shrink-0 aspect-square rounded-full bg-gradient-to-br from-accent-400 to-indigo-500 text-white border-4 border-white dark:border-navy-card flex items-center justify-center overflow-hidden font-bold text-3xl shadow-md transition-all cursor-pointer hover:opacity-90 hover:scale-[1.02] focus:outline-none"
-            >
-              {profilePictureValue && !imgError ? (
-                <img
-                  src={profilePictureValue}
-                  alt=""
-                  onError={() => setImgError(true)}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                user?.fullName?.charAt(0) || 'U'
-              )}
-            </button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              accept="image/*"
-              className="hidden"
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-0 right-0 p-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-accent-600 rounded-full shadow-md cursor-pointer transition-colors duration-200"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </button>
-          </div>
-          
-          <div className="flex-1 text-center sm:text-left mb-1">
-            <h2 className="text-xl font-extrabold text-slate-900 dark:text-slate-100">{user?.fullName}</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{user?.department || 'Agency Personnel'}</p>
-          </div>
-          
-          <div className="sm:mb-2">
-            <span className="px-3.5 py-1 bg-accent-50 dark:bg-accent-950/40 text-accent-700 dark:text-accent-300 text-[10px] font-extrabold rounded-full uppercase tracking-wider border border-accent-100 dark:border-accent-800/30">
-              {user?.role?.name || 'User'} Role
-            </span>
-          </div>
-        </div>
-      </div>
+      <ProfileHeader user={user} />
 
       {/* Details Card */}
       <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border rounded-2xl p-6 md:p-8 shadow-sm transition-colors duration-200">

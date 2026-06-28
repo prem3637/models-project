@@ -28,21 +28,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
       }`}
     >
       {/* Sidebar Header / Logo */}
-      <div className="h-16 flex items-center px-6 border-b border-slate-200 dark:border-navy-border justify-between">
-        <div className="flex items-center gap-3 overflow-hidden">
-          <div className="w-8 h-8 rounded-lg bg-accent-600 flex items-center justify-center text-white font-extrabold shrink-0 shadow-md">
-            R
-          </div>
-          {sidebarOpen && (
-            <span className="font-extrabold text-sm tracking-wider text-slate-800 dark:text-slate-100 whitespace-nowrap uppercase">
-              RBC Models
-            </span>
+      <div className="h-16 flex items-center px-4 border-b border-slate-200 dark:border-navy-border relative justify-center">
+        <div className="flex items-center justify-center overflow-hidden w-full">
+          {sidebarOpen ? (
+            <img src="/logo.png" alt="Pizlio Models Logo" className="h-8 object-contain dark:invert select-none" />
+          ) : (
+            <img src="/favicon.ico" alt="Pizlio Models" className="w-8 h-8 object-contain dark:invert select-none" />
           )}
         </div>
         {sidebarOpen && (
           <button
             onClick={onToggleSidebar}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-650 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-navy-950 md:hidden cursor-pointer transition-colors"
+            className="absolute right-4 p-1 rounded-lg text-slate-400 hover:text-slate-650 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-navy-950 md:hidden cursor-pointer transition-colors"
             title="Close Sidebar"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

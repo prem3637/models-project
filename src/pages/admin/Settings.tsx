@@ -69,7 +69,7 @@ export const Settings: React.FC = () => {
             <input
               type="text"
               disabled
-              value="RBC-AGENCY-EAST-99X"
+              value="PIZLIO-AGENCY-EAST-99X"
               className="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-400 select-none outline-none text-xs font-medium"
             />
           </div>

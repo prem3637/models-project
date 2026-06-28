@@ -19,5 +19,5 @@ jobs:
           script: |
             cd /var/www/frontend
             git pull origin master
-            npm install
+            npm install --legacy-peer-deps
             npm run build

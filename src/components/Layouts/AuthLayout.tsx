@@ -21,7 +21,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
             </svg>
           </div>
           <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">Pizilio MODELS</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider mt-1">Agency Management Portal</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider mt-1">Model Management Portal</p>
         </div>
 
         {/* Content container */}

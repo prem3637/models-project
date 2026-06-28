@@ -138,7 +138,7 @@ export const RoleConfiguration: React.FC = () => {
           showPagination={true}
           isLoading={isRolesLoading || isFetching}
           noResultMessage="No roles matching search query."
-          minHeight="200px"
+          minHeight="350px"
         />
       </div>
 

@@ -104,7 +104,6 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user }) => {
               <img
                 src={currentProfilePicture}
                 alt=""
-                crossOrigin="anonymous"
                 onError={() => setImgError(true)}
                 className="w-full h-full object-cover"
               />
@@ -218,7 +217,6 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user }) => {
             <img
               src={currentProfilePicture}
               alt="Profile Full Size"
-              crossOrigin="anonymous"
               className="max-w-full max-h-[80vh] rounded-lg object-contain shadow-inner"
             />
           </div>

@@ -31,7 +31,7 @@ export function DataTable<TData>({
   isLoading = false,
   noResultMessage = "No Records Found",
   maxHeight = "550px",
-  minHeight = "250px",
+  minHeight = "350px",
   onRowClick,
   ...props
 }: DataTableProps<TData>) {

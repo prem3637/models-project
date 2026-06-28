@@ -69,7 +69,6 @@ const UserCell: React.FC<{ user: IUser; onView: (user: IUser) => void }> = ({ us
           <img
             src={user.profilePicture}
             alt={user.fullName}
-            crossOrigin="anonymous"
             onError={() => setImgError(true)}
             className="w-full h-full object-cover"
           />

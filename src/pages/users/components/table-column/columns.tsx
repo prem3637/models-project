@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { formatDate } from '../../../../utils/helperfunction';
 import { createColumnHelper } from '@tanstack/react-table';
 import { IUser } from '../../../../interface/user';
 import { Edit, Trash2, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
@@ -136,9 +137,7 @@ export const getUserColumns = ({ onView, onEdit, onDelete, ability }: UserColumn
     header: 'Last Login',
     cell: info => (
       <span className="text-slate-400 dark:text-slate-400 font-medium text-xs">
-        {info.getValue()
-          ? new Date(info.getValue()!).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-          : 'Never Used'}
+        {formatDate(info.getValue()) || 'Never Used'}
       </span>
     )
   }),
@@ -151,9 +150,7 @@ export const getUserColumns = ({ onView, onEdit, onDelete, ability }: UserColumn
     ),
     cell: info => (
       <span className="text-slate-550 dark:text-slate-405 font-medium text-xs">
-        {info.getValue()
-          ? new Date(info.getValue()!).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-          : '—'}
+        {formatDate(info.getValue()) || '—'}
       </span>
     )
   }),
@@ -166,9 +163,7 @@ export const getUserColumns = ({ onView, onEdit, onDelete, ability }: UserColumn
     ),
     cell: info => (
       <span className="text-slate-550 dark:text-slate-405 font-medium text-xs">
-        {info.getValue()
-          ? new Date(info.getValue()!).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-          : '—'}
+        {formatDate(info.getValue()) || '—'}
       </span>
     )
   }),

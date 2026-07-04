@@ -26,6 +26,7 @@ interface SearchDropdownProps<T = any> {
   onLoadMore?: () => void;
   helperText?: string;
   disabled?: boolean;
+  selectedLabel?: string;
 }
 
 export function SearchDropdown<T = any>({
@@ -47,6 +48,7 @@ export function SearchDropdown<T = any>({
   onLoadMore,
   helperText,
   disabled = false,
+  selectedLabel,
 }: SearchDropdownProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -190,13 +192,15 @@ export function SearchDropdown<T = any>({
       >
         <span
           className={
-            selectedItem
+            selectedItem || selectedLabel
               ? 'text-slate-800 dark:text-slate-200'
               : 'text-slate-400 dark:text-slate-500'
           }
         >
           {selectedItem
             ? getLabelToUse(selectedItem)
+            : selectedLabel
+            ? selectedLabel
             : placeholder}
         </span>
 

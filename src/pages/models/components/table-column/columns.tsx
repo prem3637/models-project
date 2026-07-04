@@ -1,93 +1,75 @@
 import React from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
-import { RBCModel } from '../../mockDb';
+import { IModel } from '../../../../interface/model';
 import { Eye, Edit, Trash2 } from 'lucide-react';
 
-const columnHelper = createColumnHelper<RBCModel>();
+const columnHelper = createColumnHelper<IModel>();
 
 interface ModelColumnsProps {
-  onOpenDetails: (model: RBCModel) => void;
-  onOpenEdit: (model: RBCModel) => void;
+  onOpenDetails: (model: IModel) => void;
+  onOpenEdit: (model: IModel) => void;
   onDelete: (id: string, name: string) => void;
   ability: any;
 }
 
 export const getModelColumns = ({ onOpenDetails, onOpenEdit, onDelete, ability }: ModelColumnsProps) => [
-  columnHelper.accessor('name', {
+  columnHelper.accessor(row => row.basicDeatils?.fullName, {
+    id: 'fullName',
     header: 'Model',
     cell: info => {
       const model = info.row.original;
+      const imageUrl = model.images?.[0]?.url || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&h=600&fit=crop';
       return (
         <div className="flex items-center gap-3 cursor-pointer group" onClick={() => onOpenDetails(model)}>
           <img
-            src={model.imageUrl}
-            alt={model.name}
+            src={imageUrl}
+            alt={model.basicDeatils?.fullName || ''}
             className="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-navy-border shrink-0 shadow-sm"
           />
           <div className="flex flex-col min-w-0">
             <span className="text-xs font-bold text-slate-800 dark:text-slate-205 group-hover:text-accent-600 transition-colors truncate">
-              {model.name}
+              {model.basicDeatils?.fullName || ''}
             </span>
-            <span className="text-[10px] text-slate-405 dark:text-slate-550 truncate font-medium">{model.email}</span>
+            <span className="text-[10px] text-slate-405 dark:text-slate-550 truncate font-medium">{model.basicDeatils?.email || ''}</span>
           </div>
         </div>
       );
     }
   }),
-  columnHelper.accessor('gender', {
+  columnHelper.accessor(row => row.basicDeatils?.gender, {
+    id: 'gender',
     header: 'Gender',
-    cell: info => <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{info.getValue()}</span>
+    cell: info => <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{info.getValue() || ''}</span>
   }),
-  columnHelper.accessor('age', {
+  columnHelper.accessor(row => row.basicDeatils?.age, {
+    id: 'age',
     header: 'Age',
-    cell: info => <span className="text-xs text-slate-700 dark:text-slate-300 font-semibold">{info.getValue()} yrs</span>
+    cell: info => <span className="text-xs text-slate-700 dark:text-slate-300 font-semibold">{info.getValue() ? `${info.getValue()} yrs` : ''}</span>
   }),
-  columnHelper.accessor('height', {
+  columnHelper.accessor(row => row.measurements?.height, {
+    id: 'height',
     header: 'Height',
-    cell: info => <span className="text-xs text-slate-700 dark:text-slate-300 font-semibold">{info.getValue()} cm</span>
+    cell: info => <span className="text-xs text-slate-700 dark:text-slate-300 font-semibold">{info.getValue() || ''}</span>
   }),
-  columnHelper.accessor('weight', {
+  columnHelper.accessor(row => row.measurements?.weight, {
+    id: 'weight',
     header: 'Weight',
-    cell: info => <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{info.getValue()} kg</span>
+    cell: info => <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{info.getValue() ? `${info.getValue()} kg` : ''}</span>
   }),
-  columnHelper.accessor('category', {
-    header: 'Category',
-    cell: info => (
-      <span className="text-[11px] font-bold px-2 py-0.5 bg-slate-100 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-navy-border rounded-md">
-        {info.getValue()}
-      </span>
-    )
-  }),
-  columnHelper.accessor('country', {
+  columnHelper.accessor(row => row.address?.country, {
+    id: 'country',
     header: 'Country',
-    cell: info => <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{info.getValue()}</span>
+    cell: info => <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{info.getValue()?.name || ''}</span>
   }),
-  columnHelper.accessor('state', {
+  columnHelper.accessor(row => row.address?.state, {
+    id: 'state',
     header: 'State',
-    cell: info => <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{info.getValue()}</span>
+    cell: info => <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{info.getValue()?.name || ''}</span>
   }),
-  columnHelper.accessor('city', {
+  columnHelper.accessor(row => row.address?.city, {
+    id: 'city',
     header: 'City',
-    cell: info => <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{info.getValue()}</span>
-  }),
-  columnHelper.accessor('status', {
-    header: 'Status',
-    cell: info => {
-      const val = info.getValue();
-      return (
-        <span
-          className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
-            val === 'Active'
-              ? 'bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/30'
-              : val === 'On-Leave'
-              ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/30'
-              : 'bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-405 border border-slate-200 dark:border-slate-800/30'
-          }`}
-        >
-          {val}
-        </span>
-      );
-    }
+    cell: info => <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{info.getValue()?.name || ''}</span>
   }),
   columnHelper.display({
     id: 'actions',
@@ -99,7 +81,7 @@ export const getModelColumns = ({ onOpenDetails, onOpenEdit, onDelete, ability }
           <button
             onClick={() => onOpenDetails(model)}
             title="View Profile"
-            className="p-1.5 rounded border border-transparent text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 hover:border-green-200/50 dark:hover:bg-green-950/20 dark:hover:bg-green-900/30 transition-colors cursor-pointer"
+            className="p-1.5 rounded border border-transparent text-green-600 hover:text-green-700 dark:text-green-405 dark:hover:text-green-300 hover:bg-green-50 hover:border-green-200/50 dark:hover:bg-green-950/20 dark:hover:bg-green-900/30 transition-colors cursor-pointer"
           >
             <Eye className="w-3.5 h-3.5" />
           </button>
@@ -114,7 +96,7 @@ export const getModelColumns = ({ onOpenDetails, onOpenEdit, onDelete, ability }
           )}
           {ability.can('delete', 'models') && (
             <button
-              onClick={() => onDelete(model.id, model.name)}
+              onClick={() => onDelete(model.id, model.basicDeatils?.fullName || '')}
               title="Delete Profile"
               className="p-1.5 rounded border border-transparent text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 hover:border-red-200/50 dark:hover:bg-red-950/20 dark:hover:bg-red-900/30 transition-colors cursor-pointer"
             >

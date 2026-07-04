@@ -453,7 +453,7 @@ export const UserForm: React.FC<UserFormProps> = ({ editing, onSuccess, readOnly
             Cancel
           </Button>
           <Button type="submit" variant="primary" isLoading={isLoading}>
-            {isEdit ? 'Save Changes' : 'Create User'}
+            {isEdit ? 'Save Changes' : 'Add User'}
           </Button>
         </div>
       )}

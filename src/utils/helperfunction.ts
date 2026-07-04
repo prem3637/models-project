@@ -99,3 +99,52 @@ export const filterNavigationItems = (
       return ability.can(parentAction, parentSubject);
     });
 };
+
+
+export const formatInchesToFeetInches = (totalInches: number): string => {
+  if (isNaN(totalInches) || totalInches < 0) return '0 ft 0 in';
+  const feet = Math.floor(totalInches / 12);
+  const inches = Math.round(totalInches % 12);
+  const adjustedInches = inches === 12 ? 0 : inches;
+  const adjustedFeet = inches === 12 ? feet + 1 : feet;
+  return `${adjustedFeet} ft ${adjustedInches} in`;
+};
+
+export const formatCmToFeetInches = (cm: number): string => {
+  if (!cm || isNaN(cm) || cm <= 0) return '0 ft 0 in';
+  const totalInches = cm / 2.54;
+  return formatInchesToFeetInches(totalInches);
+};
+
+export const formatDate = (
+  date: string | number | Date | null | undefined,
+  options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' }
+): string => {
+  if (!date) return '';
+  const parsedDate = new Date(date);
+  if (isNaN(parsedDate.getTime())) return '';
+  return parsedDate.toLocaleDateString(undefined, options);
+};
+
+export const parsePhoneString = (phoneStr: string) => {
+  const clean = phoneStr.replace(/\s+/g, '');
+  if (!clean.startsWith('+')) {
+    return { countryCode: '91', phone: clean };
+  }
+  
+  const withoutPlus = clean.substring(1);
+  const commonCodes = ['91', '1', '44', '33', '49', '61', '55', '86', '7', '81', '39', '34', '31', '41'];
+  const matchedCode = commonCodes.find(code => withoutPlus.startsWith(code));
+  
+  if (matchedCode) {
+    return {
+      countryCode: matchedCode,
+      phone: withoutPlus.substring(matchedCode.length)
+    };
+  }
+  
+  return {
+    countryCode: withoutPlus.substring(0, 2),
+    phone: withoutPlus.substring(2)
+  };
+};

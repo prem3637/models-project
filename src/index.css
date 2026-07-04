@@ -142,16 +142,55 @@ input[type="range"]::-webkit-slider-thumb:hover {
   background: linear-gradient(
     90deg,
     #1e293b 25%,
-    #1e293b/40 50%,
-    #1e293b 75%
-  );
-  /* Fallback without opacity slash syntax if compiler complains, but linear-gradient is fine. Let's use clean values: */
-  background: linear-gradient(
-    90deg,
-    #1e293b 25%,
     #2c3749 50%,
     #1e293b 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.6s infinite linear;
+}
+
+/* Dual range slider styles */
+.dual-range-container input[type="range"] {
+  position: absolute;
+  width: 100%;
+  pointer-events: none;
+  background: transparent;
+  outline: none;
+  border: none;
+  height: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.dual-range-container input[type="range"]::-webkit-slider-thumb {
+  pointer-events: auto;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #c29d63; /* match the brown shade in the user's screenshot */
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  cursor: pointer;
+  z-index: 30;
+  position: relative;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.dual-range-container input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  background: #b08c52;
+}
+
+.dual-range-container input[type="range"]::-moz-range-thumb {
+  pointer-events: auto;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #c29d63;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  cursor: pointer;
+  z-index: 30;
 }

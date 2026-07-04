@@ -1,368 +1,824 @@
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ModelFormSchema, ModelFormData } from '../ModelSchema';
-import { useCreateModel, useUpdateModel, useWorldCities } from '../modelsHooks';
+import {
+  useAddModelMutation,
+  useUpdateModelMutation,
+  useRemoveModelFileMutation
+} from '../../../redux/services/models';
 import FormInput from '../../../components/ui/FormInput';
+import NumberInput from '../../../components/ui/NumberInput';
 import SearchDropdown from '../../../components/ui/SearchDropdown';
 import Button from '../../../components/ui/Button';
-
-const SUGGESTED_IMAGES = [
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&h=600&fit=crop',
-  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&h=600&fit=crop',
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=600&fit=crop',
-  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&h=600&fit=crop',
-  'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&h=600&fit=crop',
-  'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&h=600&fit=crop',
-  'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=500&h=600&fit=crop',
-  'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=500&h=600&fit=crop',
-  'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=500&h=600&fit=crop',
-];
+import CountrySingleSelect from '../../../components/ui/CountrySingleSelect';
+import StateSingleSelect from '../../../components/ui/StateSingleSelect';
+import CitySingleSelect from '../../../components/ui/CitySingleSelect';
+import PhoneInputField from '../../../components/ui/PhoneInputField';
+import toast from 'react-hot-toast';
+import { useConfirmDelete } from '../../../utils/useConfirmDelete';
+import { parsePhoneString } from '../../../utils/helperfunction';
 
 interface ModelFormProps {
   modelId?: string;
-  initialValues?: Partial<ModelFormData>;
+  initialValues?: any;
   onSuccess: () => void;
 }
 
 export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, onSuccess }) => {
-  const createMutation = useCreateModel();
-  const updateMutation = useUpdateModel();
+  const [addModel, { isLoading: isAdding }] = useAddModelMutation();
+  const [updateModel, { isLoading: isUpdating }] = useUpdateModelMutation();
+  const [removeModelFile] = useRemoveModelFileMutation();
   const isEdit = !!modelId;
 
-  // Let react-hook-form handle the fields
+  // Real files state for both Create & Edit modes
+  const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
+  const [previews, setPreviews] = React.useState<string[]>([]);
+  const [deletedImageIds, setDeletedImageIds] = React.useState<string[]>([]);
+
+  const { confirmDelete: confirmImageDelete } = useConfirmDelete<any>(async (item) => {
+    if (isEdit && modelId) {
+      try {
+        await removeModelFile({ id: modelId, fileId: item.id }).unwrap();
+        setDeletedImageIds(prev => [...prev, item.id]);
+      } catch (err) {
+        console.error("Failed to delete model file:", err);
+        throw err;
+      }
+    } else {
+      setDeletedImageIds(prev => [...prev, item.id]);
+    }
+  });
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Preview Image Lightbox Modal
+  const [previewImageUrl, setPreviewImageUrl] = React.useState<string | null>(null);
+
   const { register, handleSubmit, control, watch, setValue, formState: { errors } } = useForm<ModelFormData>({
     resolver: zodResolver(ModelFormSchema),
     defaultValues: {
-      name: initialValues?.name || '',
-      age: initialValues?.age || 20,
-      height: initialValues?.height || 175,
-      weight: initialValues?.weight || 60,
-      gender: initialValues?.gender || 'Female',
-      category: initialValues?.category || 'Fashion',
-      status: initialValues?.status || 'Active',
-      email: initialValues?.email || '',
-      phone: initialValues?.phone || '',
-      imageUrl: initialValues?.imageUrl || SUGGESTED_IMAGES[0],
-      images: initialValues?.images || [SUGGESTED_IMAGES[0]],
+      basicDeatils: {
+        fullName: initialValues?.basicDeatils?.fullName || '',
+        email: initialValues?.basicDeatils?.email || '',
+        primartContact: {
+          code: initialValues?.basicDeatils?.primartContact?.code || '+91',
+          number: initialValues?.basicDeatils?.primartContact?.number || '',
+        },
+        secondryContact: {
+          code: initialValues?.basicDeatils?.secondryContact?.code || '+91',
+          number: initialValues?.basicDeatils?.secondryContact?.number || '',
+        },
+        age: initialValues?.basicDeatils?.age || undefined,
+        dob: initialValues?.basicDeatils?.dob ? new Date(initialValues.basicDeatils.dob).toISOString().split('T')[0] : '',
+        gender: initialValues?.basicDeatils?.gender || 'Male',
+      },
+      physicalCharacteristics: {
+        complexion: initialValues?.physicalCharacteristics?.complexion || '',
+        bodyShape: initialValues?.physicalCharacteristics?.bodyShape || '',
+        eyeColor: initialValues?.physicalCharacteristics?.eyeColor || '',
+      },
+      measurements: {
+        height: initialValues?.measurements?.height || '',
+        weight: initialValues?.measurements?.weight ? String(initialValues.measurements.weight) : '',
+        bust: initialValues?.measurements?.bust || '',
+        waist: initialValues?.measurements?.waist || '',
+        hips: initialValues?.measurements?.hips || '',
+        shoe: initialValues?.measurements?.shoe || '',
+        chest: initialValues?.measurements?.chest || '',
+        shoulder: initialValues?.measurements?.shoulder || '',
+      },
+      address: {
+        addressLine1: initialValues?.address?.addressLine1 || '',
+        addressLine2: initialValues?.address?.addressLine2 || '',
+        country: initialValues?.address?.country?.id || '',
+        state: initialValues?.address?.state?.id || '',
+        city: initialValues?.address?.city?.id || '',
+        postalCode: initialValues?.address?.postalCode || '',
+      },
       bio: initialValues?.bio || '',
-      country: initialValues?.country || '',
-      state: initialValues?.state || '',
-      city: initialValues?.city || ''
+      files: []
     }
   });
 
-  const selectedImages = watch('images') || [];
+  const initialHeight = useMemo(() => {
+    const heightStr = initialValues?.measurements?.height || '';
+    const match = heightStr.match(/(\d+)\s*fit\s*(\d+)\s*inch/);
+    if (match) {
+      return { feet: parseInt(match[1], 10), inches: parseInt(match[2], 10) };
+    }
+    return { feet: 5, inches: 0 };
+  }, [initialValues?.measurements?.height]);
 
-  const { data: worldCities = [], isLoading: isCitiesLoading } = useWorldCities();
+  const [heightFeet, setHeightFeet] = React.useState<string>(initialValues?.measurements?.height ? String(initialHeight.feet) : '');
+  const [heightInches, setHeightInches] = React.useState<string>(initialValues?.measurements?.height ? String(initialHeight.inches) : '');
 
-  const countries = React.useMemo(() => {
-    return Array.from(new Set(worldCities.map(c => c.country))).sort();
-  }, [worldCities]);
+  useEffect(() => {
+    const heightStr = initialValues?.measurements?.height || '';
+    const match = heightStr.match(/(\d+)\s*fit\s*(\d+)\s*inch/);
+    const feet = match ? match[1] : '';
+    const inches = match ? match[2] : '';
+    setHeightFeet(feet);
+    setHeightInches(inches);
+    if (heightStr) {
+      setValue('measurements.height', heightStr);
+    }
+  }, [initialValues?.measurements?.height, setValue]);
 
-  const selectedCountry = watch('country');
+  const selectedCountry = watch('address.country') || '';
+  const selectedState = watch('address.state') || '';
+  const watchedDob = watch('basicDeatils.dob');
 
-  const states = React.useMemo(() => {
-    if (!selectedCountry) return [];
-    return Array.from(
-      new Set(worldCities.filter(c => c.country === selectedCountry && c.subcountry).map(c => c.subcountry))
-    ).sort();
-  }, [worldCities, selectedCountry]);
+  const calculatedAge = useMemo(() => {
+    if (!watchedDob) return null;
+    const birthDate = new Date(watchedDob);
+    let age = new Date().getFullYear() - birthDate.getFullYear();
+    const m = new Date().getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && new Date().getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age >= 0 ? age : null;
+  }, [watchedDob]);
 
-  const selectedState = watch('state');
+  useEffect(() => {
+    if (calculatedAge !== null) {
+      setValue('basicDeatils.age', calculatedAge, { shouldValidate: true });
+    }
+  }, [calculatedAge, setValue]);
 
-  const filteredCities = React.useMemo(() => {
-    if (!selectedCountry || !selectedState) return [];
-    return Array.from(
-      new Set(worldCities.filter(c => c.country === selectedCountry && c.subcountry === selectedState).map(c => c.name))
-    ).sort();
-  }, [worldCities, selectedCountry, selectedState]);
+  // Helper to extract clean filename
+  const getCleanFileName = (path: string) => {
+    if (!path) return '';
+    return path.split('/').pop() || '';
+  };
 
-  const handleToggleImage = (url: string) => {
-    const nextImages = selectedImages.includes(url)
-      ? selectedImages.filter(x => x !== url)
-      : [...selectedImages, url];
-      
-    setValue('images', nextImages, { shouldValidate: true });
-    
-    // Auto-select the first one as imageUrl
-    if (nextImages.length > 0) {
-      setValue('imageUrl', nextImages[0], { shouldValidate: true });
-    } else {
-      setValue('imageUrl', '', { shouldValidate: true });
+  // Helper to format file size
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+
+  // File Picker Handlers for Create Mode
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      const newFiles = [...selectedFiles, ...filesArray];
+      setSelectedFiles(newFiles);
+      setValue('files', newFiles, { shouldValidate: true });
+
+      const newPreviews = filesArray.map(file => URL.createObjectURL(file));
+      setPreviews(prev => [...prev, ...newPreviews]);
     }
   };
 
-  const onSubmit = (data: ModelFormData) => {
+  const handleRemoveFile = (index: number) => {
+    const newFiles = selectedFiles.filter((_, i) => i !== index);
+    setSelectedFiles(newFiles);
+    setValue('files', newFiles, { shouldValidate: true });
+
+    URL.revokeObjectURL(previews[index]);
+    setPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleLocalDeleteExisting = (fileId: string, fileName: string) => {
+    confirmImageDelete({ id: fileId }, fileName);
+  };
+
+  const onSubmit = async (data: ModelFormData) => {
+    const payload: any = {
+      basicDeatils: data.basicDeatils,
+      physicalCharacteristics: data.physicalCharacteristics,
+      measurements: data.measurements,
+      address: data.address,
+      bio: data.bio,
+    };
+
     if (isEdit && modelId) {
-      updateMutation.mutate(
-        { id: modelId, data },
-        {
-          onSuccess: () => {
-            onSuccess();
-          }
-        }
-      );
-    } else {
-      createMutation.mutate(data, {
-        onSuccess: () => {
-          onSuccess();
-        }
+      const remainingImageIds = initialValues?.images
+        ? initialValues.images.map((img: any) => img.id).filter((id: string) => !deletedImageIds.includes(id))
+        : [];
+      payload.images = JSON.stringify(remainingImageIds);
+    }
+
+    try {
+      const formData = new FormData();
+
+      // Serialize nested objects into strings to support Multer text fields parsing
+      formData.append('basicDeatils', JSON.stringify(payload.basicDeatils));
+      formData.append('physicalCharacteristics', JSON.stringify(payload.physicalCharacteristics));
+      formData.append('measurements', JSON.stringify(payload.measurements));
+      formData.append('address', JSON.stringify(payload.address));
+      formData.append('bio', payload.bio);
+
+      if (payload.images !== undefined) {
+        formData.append('images', payload.images);
+      }
+
+      selectedFiles.forEach(file => {
+        formData.append('files', file);
       });
+
+      if (isEdit && modelId) {
+        await updateModel({ id: modelId, body: formData }).unwrap();
+        onSuccess();
+      } else {
+        await addModel(formData).unwrap();
+        onSuccess();
+      }
+    } catch (err: any) {
+      console.error('Failed to submit model form', err);
+      toast.error(err?.data?.message || err?.message || 'Submission failed');
     }
   };
 
-  const isPending = createMutation.isPending || updateMutation.isPending;
+  const isPending = isAdding || isUpdating;
+  const hasPhotos = isEdit
+    ? ((initialValues?.images?.length || 0) - deletedImageIds.length > 0) || selectedFiles.length > 0
+    : selectedFiles.length > 0;
+  const totalPhotosCount = isEdit
+    ? (initialValues?.images?.length || 0) - deletedImageIds.length + selectedFiles.length
+    : selectedFiles.length;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5 text-left pb-10">
-      {/* Portfolio Selection */}
-      <div className="flex flex-col gap-2">
-        <div className="flex flex-col gap-0.5">
-          <span className="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-            Portfolio Gallery Selection
-          </span>
-          <span className="text-[10px] text-slate-400 dark:text-slate-500">Select one or more images. The first selected image will be used as the primary avatar.</span>
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6 text-left pb-10">
+
+      {/* ── SECTION 1: PHOTOS UPLOAD ────────────────────────────────────────────── */}
+      <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-4">
+        <div className="flex flex-col gap-1 border-b border-slate-100 dark:border-navy-border pb-3">
+          <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100  tracking-wider flex items-center gap-2">
+            <svg className="w-4 h-4 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Portfolio Gallery
+          </h3>
+          <span className="text-[10px] text-slate-405 dark:text-slate-500">Upload talent portfolio images. At least one image is required.</span>
         </div>
 
-        <div className="grid grid-cols-5 gap-2 mt-1">
-          {SUGGESTED_IMAGES.map((url, idx) => {
-            const isSelected = selectedImages.includes(url);
-            const orderIndex = selectedImages.indexOf(url);
-            return (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => handleToggleImage(url)}
-                className={`relative aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all ${
-                  isSelected
-                    ? 'border-accent-600 ring-2 ring-accent-500/20 scale-[0.97] shadow-sm'
-                    : 'border-slate-200 dark:border-navy-border hover:border-slate-350 dark:hover:border-slate-700'
-                }`}
-              >
-                <img src={url} alt={`Option ${idx + 1}`} className="w-full h-full object-cover" />
-                
-                {/* Check Badge / Number indicator */}
-                {isSelected && (
-                  <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-accent-600 border border-white text-[10px] font-bold text-white flex items-center justify-center shadow-md">
-                    {orderIndex + 1}
+        {/* Drag & Drop Area */}
+        <div className="flex flex-col items-center">
+          <label className="w-full flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-navy-border hover:border-accent-500/60 dark:hover:border-accent-500/60 hover:bg-slate-50/40 dark:hover:bg-[#0c101d]/10 rounded-xl p-8 cursor-pointer transition-all duration-200">
+            <div className="flex flex-col items-center gap-2.5 text-center">
+              <div className="p-3 bg-slate-50 dark:bg-navy-950/40 text-slate-400 dark:text-slate-505 rounded-xl border dark:border-navy-border">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Click to select or drag & drop portfolio images</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500">PNG, JPG, or JPEG (Max 10MB per file)</span>
+              </div>
+            </div>
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              className="hidden"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              disabled={isPending}
+            />
+          </label>
+        </div>
+
+        {/* File Preview List View */}
+        {hasPhotos && (
+          <div className="flex flex-col gap-2 mt-2">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-505  tracking-wider">
+              Uploaded Photos ({totalPhotosCount})
+            </span>
+            <div className="flex flex-col border border-slate-200/60 dark:border-navy-border rounded-xl divide-y divide-slate-100 dark:divide-navy-border/50 overflow-y-auto max-h-[350px] bg-slate-50/25 dark:bg-navy-950/10">
+
+              {/* EDIT MODE: Display Saved Cloud Photos (excluding deleted ones) */}
+              {isEdit && initialValues?.images && initialValues.images.filter((img: any) => !deletedImageIds.includes(img.id)).map((img: any) => {
+                const cleanName = getCleanFileName(img.path);
+                return (
+                  <div key={img.id} className="flex items-center justify-between p-3.5 hover:bg-white dark:hover:bg-navy-card/30 transition-colors">
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <img
+                        src={img.url}
+                        alt="Portfolio"
+                        className="w-11 h-11 object-cover rounded-xl border border-slate-200 dark:border-navy-border cursor-zoom-in hover:opacity-90 transition-all shadow-sm shrink-0"
+                        onClick={() => setPreviewImageUrl(img.url)}
+                      />
+                      <div className="flex flex-col text-left min-w-0">
+                        <span
+                          onClick={() => setPreviewImageUrl(img.url)}
+                          className="text-xs font-bold text-slate-800 dark:text-slate-200 hover:text-accent-500 dark:hover:text-accent-400 cursor-zoom-in transition-colors truncate"
+                        >
+                          {cleanName}
+                        </span>
+                        <span className="text-[9px] text-slate-405 dark:text-slate-505 font-bold  tracking-wider">
+                          {img.size ? formatFileSize(img.size) : 'Cloud Asset'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewImageUrl(img.url)}
+                        className="text-[10px] font-extrabold text-accent-500 hover:text-accent-600 transition-colors px-2.5 py-1.5 rounded-lg hover:bg-accent-50 dark:hover:bg-accent-950/20  tracking-wider"
+                      >
+                        View
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleLocalDeleteExisting(img.id, cleanName)}
+                        disabled={isPending}
+                        className="text-slate-400 hover:text-red-500 dark:hover:text-red-400 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
-                )}
-              </button>
-            );
-          })}
+                );
+              })}
+
+              {/* Display Selected Local Photos */}
+              {previews.map((previewUrl, idx) => {
+                const file = selectedFiles[idx];
+                return (
+                  <div key={idx} className="flex items-center justify-between p-3.5 hover:bg-white dark:hover:bg-navy-card/30 transition-colors">
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <img
+                        src={previewUrl}
+                        alt="Preview"
+                        className="w-11 h-11 object-cover rounded-xl border border-slate-200 dark:border-navy-border cursor-zoom-in hover:opacity-90 transition-all shadow-sm shrink-0"
+                        onClick={() => setPreviewImageUrl(previewUrl)}
+                      />
+                      <div className="flex flex-col text-left min-w-0">
+                        <span
+                          onClick={() => setPreviewImageUrl(previewUrl)}
+                          className="text-xs font-bold text-slate-800 dark:text-slate-200 hover:text-accent-500 dark:hover:text-accent-400 cursor-zoom-in transition-colors truncate"
+                        >
+                          {file ? file.name : `image-${idx + 1}`}
+                        </span>
+                        <span className="text-[9px] text-slate-400 dark:text-slate-505 font-bold  tracking-wider">
+                          {file?.size ? formatFileSize(file.size) : 'Local Asset'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewImageUrl(previewUrl)}
+                        className="text-[10px] font-extrabold text-accent-500 hover:text-accent-600 transition-colors px-2.5 py-1.5 rounded-lg hover:bg-accent-50 dark:hover:bg-accent-950/20  tracking-wider"
+                      >
+                        View
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFile(idx)}
+                        className="text-slate-400 hover:text-red-500 dark:hover:text-red-400 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+
+            </div>
+          </div>
+        )}
+
+        {/* Validation message */}
+        {!isEdit && selectedFiles.length === 0 && (
+          <span className="text-xs text-red-500 font-medium mt-1">Please select or upload at least one image.</span>
+        )}
+      </div>
+
+      {/* ── SECTION 2: BASIC INFORMATION ────────────────────────────────────────── */}
+      <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-4">
+        <div className="flex flex-col gap-1 border-b border-slate-100 dark:border-navy-border pb-3">
+          <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 tracking-wider flex items-center gap-2">
+            <svg className="w-4 h-4 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            Basic Information
+          </h3>
+          <span className="text-[10px] text-slate-400 dark:text-slate-555">Personal details and primary contact methods.</span>
         </div>
-        {errors.images && (
-          <span className="text-xs font-medium text-red-500 mt-0.5">{errors.images.message}</span>
-        )}
-      </div>
 
-      <FormInput
-        label="Full Name"
-        id="name"
-        placeholder="Enter model's name"
-        error={errors.name?.message}
-        {...register('name')}
-      />
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <FormInput
-          label="Age"
-          id="age"
-          type="number"
-          placeholder="21"
-          error={errors.age?.message}
-          {...register('age', { valueAsNumber: true })}
-        />
-
-        <FormInput
-          label="Height (cm)"
-          id="height"
-          type="number"
-          placeholder="178"
-          error={errors.height?.message}
-          {...register('height', { valueAsNumber: true })}
-        />
-
-        <FormInput
-          label="Weight (kg)"
-          id="weight"
-          type="number"
-          placeholder="58"
-          error={errors.weight?.message}
-          {...register('weight', { valueAsNumber: true })}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Controller
-          name="gender"
-          control={control}
-          render={({ field }) => (
-            <SearchDropdown
-              label="Gender"
-              value={field.value}
-              onChange={field.onChange}
-              options={[
-                { value: 'Male', label: 'Male' },
-                { value: 'Female', label: 'Female' },
-                { value: 'Non-Binary', label: 'Non-Binary' }
-              ]}
-              error={errors.gender?.message}
-            />
-          )}
-        />
-
-        <Controller
-          name="category"
-          control={control}
-          render={({ field }) => (
-            <SearchDropdown
-              label="Category"
-              value={field.value}
-              onChange={field.onChange}
-              options={[
-                { value: 'Fashion', label: 'Fashion' },
-                { value: 'Commercial', label: 'Commercial' },
-                { value: 'Runway', label: 'Runway' },
-                { value: 'Fitness', label: 'Fitness' }
-              ]}
-              error={errors.category?.message}
-            />
-          )}
-        />
-      </div>
-
-      <Controller
-        name="status"
-        control={control}
-        render={({ field }) => (
-          <SearchDropdown
-            label="Booking Status"
-            value={field.value}
-            onChange={field.onChange}
-            options={[
-              { value: 'Active', label: 'Active (Available)' },
-              { value: 'Inactive', label: 'Inactive (Unavailable)' },
-              { value: 'On-Leave', label: 'On-Leave (Break)' }
-            ]}
-            error={errors.status?.message}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormInput
+            label="Full Name"
+            placeholder="Enter model's name"
+            error={errors.basicDeatils?.fullName?.message}
+            {...register('basicDeatils.fullName')}
           />
-        )}
-      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormInput
-          label="Email Address"
-          id="email"
-          type="email"
-          placeholder="talent@agency.com"
-          error={errors.email?.message}
-          {...register('email')}
-        />
+          <FormInput
+            label="Email Address"
+            placeholder="Enter model's email"
+            error={errors.basicDeatils?.email?.message}
+            {...register('basicDeatils.email')}
+          />
+        </div>
 
-        <FormInput
-          label="Contact Number"
-          id="phone"
-          placeholder="+1 (555) 123-4567"
-          error={errors.phone?.message}
-          {...register('phone')}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Controller
+            name="basicDeatils.primartContact"
+            control={control}
+            render={({ field, fieldState: { error, isTouched }, formState }) => {
+              const fullPhone = field.value?.code && field.value?.number
+                ? `${field.value.code}${field.value.number}`
+                : '';
+              const hasError = (!!error || !!errors.basicDeatils?.primartContact?.number?.message) && (isTouched || formState.isSubmitted);
+              const helperText = hasError
+                ? (error?.message || errors.basicDeatils?.primartContact?.number?.message || errors.basicDeatils?.primartContact?.code?.message)
+                : '';
+              return (
+                <PhoneInputField
+                  label="Primary Contact Number"
+                  value={fullPhone}
+                  error={hasError}
+                  helperText={helperText}
+                  onChange={(phoneStr) => {
+                    const parsed = parsePhoneString(phoneStr);
+                    setValue('basicDeatils.primartContact.code', parsed.countryCode ? `+${parsed.countryCode}` : '+91', { shouldValidate: true });
+                    setValue('basicDeatils.primartContact.number', parsed.phone || '', { shouldValidate: true });
+                  }}
+                />
+              );
+            }}
+          />
+
+          <Controller
+            name="basicDeatils.secondryContact"
+            control={control}
+            render={({ field, fieldState: { error, isTouched }, formState }) => {
+              const fullPhone = field.value?.code && field.value?.number
+                ? `${field.value.code}${field.value.number}`
+                : '';
+              const hasError = (!!error || !!errors.basicDeatils?.secondryContact?.number?.message) && (isTouched || formState.isSubmitted);
+              const helperText = hasError
+                ? (error?.message || errors.basicDeatils?.secondryContact?.number?.message || errors.basicDeatils?.secondryContact?.code?.message)
+                : '';
+              return (
+                <PhoneInputField
+                  label="Secondary Contact Number (Optional)"
+                  value={fullPhone}
+                  error={hasError}
+                  helperText={helperText}
+                  onChange={(phoneStr) => {
+                    const parsed = parsePhoneString(phoneStr);
+                    setValue('basicDeatils.secondryContact.code', parsed.countryCode ? `+${parsed.countryCode}` : '+91', { shouldValidate: true });
+                    setValue('basicDeatils.secondryContact.number', parsed.phone || '', { shouldValidate: true });
+                  }}
+                />
+              );
+            }}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormInput
+            label="Date of Birth"
+            type="date"
+            error={errors.basicDeatils?.dob?.message}
+            {...register('basicDeatils.dob')}
+          />
+
+          <FormInput
+            label="Age (Calculated from DOB)"
+            type="number"
+            readOnly
+            disabled
+            placeholder="Select DOB to calculate age"
+            error={errors.basicDeatils?.age?.message}
+            {...register('basicDeatils.age', { valueAsNumber: true })}
+            className="bg-slate-50 dark:bg-[#0b0f19] opacity-80 cursor-not-allowed"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Controller
+            name="basicDeatils.gender"
+            control={control}
+            render={({ field }) => (
+              <SearchDropdown
+                label="Gender"
+                value={field.value}
+                onChange={field.onChange}
+                options={[
+                  { value: 'Male', label: 'Male' },
+                  { value: 'Female', label: 'Female' },
+                  { value: 'Other', label: 'Other' }
+                ]}
+                error={errors.basicDeatils?.gender?.message}
+              />
+            )}
+          />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Controller
-          name="country"
-          control={control}
-          render={({ field }) => (
-            <SearchDropdown
-              label="Country"
-              value={field.value}
-              onChange={(val) => {
-                field.onChange(val);
-                setValue('state', '');
-                setValue('city', '');
-              }}
-              options={countries.map(c => ({ value: c, label: c }))}
-              placeholder={isCitiesLoading ? 'Loading countries...' : 'Select Country'}
-              error={errors.country?.message}
-            />
-          )}
-        />
+      {/* ── SECTION 3: PHYSICAL CHARACTERISTICS ───────────────────────────────────── */}
+      <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-4">
+        <div className="flex flex-col gap-1 border-b border-slate-100 dark:border-navy-border pb-3">
+          <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 tracking-wider flex items-center gap-2">
+            <svg className="w-4 h-4 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            Physical Characteristics
+          </h3>
+          <span className="text-[10px] text-slate-400 dark:text-slate-500">Talent appearance description and aesthetic attributes.</span>
+        </div>
 
-        <Controller
-          name="state"
-          control={control}
-          render={({ field }) => (
-            <SearchDropdown
-              label="State"
-              value={field.value}
-              onChange={(val) => {
-                field.onChange(val);
-                setValue('city', '');
-              }}
-              options={states.map(s => ({ value: s, label: s }))}
-              placeholder={isCitiesLoading ? 'Loading states...' : 'Select State'}
-              error={errors.state?.message}
-              className={!selectedCountry ? 'opacity-65 pointer-events-none' : ''}
-            />
-          )}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <FormInput
+            label="Complexion (e.g. Fair, Dusky)"
+            placeholder="Complexion (optional)"
+            error={errors.physicalCharacteristics?.complexion?.message}
+            {...register('physicalCharacteristics.complexion')}
+          />
 
-        <Controller
-          name="city"
-          control={control}
-          render={({ field }) => (
-            <SearchDropdown
-              label="City"
-              value={field.value}
-              onChange={field.onChange}
-              options={filteredCities.map(c => ({ value: c, label: c }))}
-              placeholder={isCitiesLoading ? 'Loading cities...' : 'Select City'}
-              error={errors.city?.message}
-              className={!selectedState ? 'opacity-65 pointer-events-none' : ''}
-            />
-          )}
-        />
+          <FormInput
+            label="Body Shape (e.g. Hourglass)"
+            placeholder="Body Shape (optional)"
+            error={errors.physicalCharacteristics?.bodyShape?.message}
+            {...register('physicalCharacteristics.bodyShape')}
+          />
+
+          <FormInput
+            label="Eye Color (optional)"
+            placeholder="e.g. Brown"
+            error={errors.physicalCharacteristics?.eyeColor?.message}
+            {...register('physicalCharacteristics.eyeColor')}
+          />
+        </div>
       </div>
 
-      <div className="w-full flex flex-col gap-1.5">
-        <label htmlFor="bio" className="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-          Bio / Cover Note
-        </label>
-        <textarea
-          id="bio"
-          rows={3}
-          placeholder="Write a brief model profile introduction..."
-          className={`w-full px-3.5 py-2.5 bg-white dark:bg-[#0f1422] border ${
-            errors.bio
-              ? 'border-red-500 focus:ring-red-500/25 focus:border-red-500'
-              : 'border-slate-300 dark:border-navy-border focus:ring-accent-500/25 focus:border-accent-500'
-          } rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-200 outline-none focus:ring-4 text-xs font-medium`}
-          {...register('bio')}
-        />
-        {errors.bio && (
-          <span className="text-xs font-medium text-red-500 mt-0.5">{errors.bio.message}</span>
-        )}
+      {/* ── SECTION 4: DETAILED MEASUREMENTS ──────────────────────────────────────── */}
+      <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-4">
+        <div className="flex flex-col gap-1 border-b border-slate-100 dark:border-navy-border pb-3">
+          <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 tracking-wider flex items-center gap-2">
+            <svg className="w-4 h-4 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" />
+            </svg>
+            Key Measurements
+          </h3>
+          <span className="text-[10px] text-slate-400 dark:text-slate-500">Dimensions, sizing, height, and weight values.</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="w-full flex flex-col gap-1.5">
+            <span className="text-[10px] md:text-xs font-bold text-slate-500 tracking-wider">
+              Height
+            </span>
+            <input type="hidden" {...register('measurements.height')} />
+            <div className="flex gap-4">
+              <div className="w-1/2 flex items-center gap-2">
+                <NumberInput
+                  placeholder="Feet"
+                  value={heightFeet}
+                  maxLength={2}
+                  onChange={(val) => {
+                    setHeightFeet(val);
+                    setValue('measurements.height', `${val || '0'} fit ${heightInches || '0'} inch`, { shouldValidate: true });
+                  }}
+                />
+                <span className="text-xs font-semibold text-slate-550 dark:text-slate-400">fit</span>
+              </div>
+              <div className="w-1/2 flex items-center gap-2">
+                <NumberInput
+                  placeholder="Inches"
+                  value={heightInches}
+                  maxLength={2}
+                  onChange={(val) => {
+                    setHeightInches(val);
+                    setValue('measurements.height', `${heightFeet || '0'} fit ${val || '0'} inch`, { shouldValidate: true });
+                  }}
+                />
+                <span className="text-xs font-semibold text-slate-550 dark:text-slate-400">inch</span>
+              </div>
+            </div>
+            {errors.measurements?.height?.message && (
+              <span className="text-xs font-medium text-red-500 mt-0.5">{errors.measurements.height.message}</span>
+            )}
+          </div>
+
+          <FormInput
+            label="Weight (kg)"
+            placeholder="Weight (e.g. 60)"
+            error={errors.measurements?.weight?.message}
+            {...register('measurements.weight')}
+          />
+
+          <FormInput
+            label="Shoulder Width"
+            placeholder="Shoulder width (e.g. 42 cm)"
+            error={errors.measurements?.shoulder?.message}
+            {...register('measurements.shoulder')}
+          />
+
+          <FormInput
+            label="Chest (optional)"
+            placeholder="e.g. 38"
+            error={errors.measurements?.chest?.message}
+            {...register('measurements.chest')}
+          />
+
+          <FormInput
+            label="Bust (optional)"
+            placeholder="e.g. 34"
+            error={errors.measurements?.bust?.message}
+            {...register('measurements.bust')}
+          />
+
+          <FormInput
+            label="Waist (optional)"
+            placeholder="e.g. 28"
+            error={errors.measurements?.waist?.message}
+            {...register('measurements.waist')}
+          />
+
+          <FormInput
+            label="Hips (optional)"
+            placeholder="e.g. 36"
+            error={errors.measurements?.hips?.message}
+            {...register('measurements.hips')}
+          />
+
+          <FormInput
+            label="Shoe Size (optional)"
+            placeholder="e.g. 8"
+            error={errors.measurements?.shoe?.message}
+            {...register('measurements.shoe')}
+          />
+        </div>
       </div>
 
-      <div className="flex justify-end gap-3 mt-4 border-t border-slate-100 dark:border-navy-border/50 pt-4">
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={onSuccess}
-          disabled={isPending}
-        >
-          Cancel
-        </Button>
+      {/* ── SECTION 5: ADDRESS DETAILS ─────────────────────────────────────────── */}
+      <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-4">
+        <div className="flex flex-col gap-1 border-b border-slate-100 dark:border-navy-border pb-3">
+          <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 tracking-wider flex items-center gap-2">
+            <svg className="w-4 h-4 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            Address Details
+          </h3>
+          <span className="text-[10px] text-slate-400 dark:text-slate-500">Regional address information of the model.</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormInput
+            label="Address Line 1"
+            placeholder="Street address, company name, P.O. box"
+            error={errors.address?.addressLine1?.message}
+            {...register('address.addressLine1')}
+          />
+
+          <FormInput
+            label="Address Line 2 (Optional)"
+            placeholder="Apartment, suite, unit, building, floor"
+            error={errors.address?.addressLine2?.message}
+            {...register('address.addressLine2')}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Controller
+            name="address.country"
+            control={control}
+            render={({ field }) => (
+              <CountrySingleSelect
+                value={field.value}
+                onChange={(val) => {
+                  field.onChange(val);
+                  setValue('address.state', '');
+                  setValue('address.city', '');
+                }}
+                error={errors.address?.country?.message}
+                initialLabel={initialValues?.address?.country?.name}
+              />
+            )}
+          />
+
+          <Controller
+            name="address.state"
+            control={control}
+            render={({ field }) => (
+              <StateSingleSelect
+                countryId={selectedCountry}
+                value={field.value}
+                onChange={(val) => {
+                  field.onChange(val);
+                  setValue('address.city', '');
+                }}
+                error={errors.address?.state?.message}
+                disabled={!selectedCountry}
+                initialLabel={initialValues?.address?.state?.name}
+              />
+            )}
+          />
+
+          <Controller
+            name="address.city"
+            control={control}
+            render={({ field }) => (
+              <CitySingleSelect
+                stateId={selectedState}
+                value={field.value}
+                onChange={field.onChange}
+                error={errors.address?.city?.message}
+                disabled={!selectedState}
+                initialLabel={initialValues?.address?.city?.name}
+              />
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormInput
+            label="Postal / Zip Code"
+            placeholder="e.g. 110001"
+            error={errors.address?.postalCode?.message}
+            {...register('address.postalCode')}
+          />
+        </div>
+      </div>
+
+      {/* ── SECTION 6: PROFESSIONAL BIO ────────────────────────────────────────── */}
+      <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-4">
+        <div className="flex flex-col gap-1 border-b border-slate-100 dark:border-navy-border pb-3">
+          <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100  tracking-wider flex items-center gap-2">
+            <svg className="w-4 h-4 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Biography
+          </h3>
+          <span className="text-[10px] text-slate-400 dark:text-slate-500">Detailed biography of the model talent.</span>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="bio" className="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-405  tracking-wider">
+            Professional Bio
+          </label>
+          <textarea
+            id="bio"
+            placeholder="Write a brief professional summary of the model's work, experience and divisions..."
+            rows={4}
+            className={`w-full px-3.5 py-2.5 bg-white dark:bg-[#0f1422] border rounded-lg text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none transition-all ${errors.bio
+              ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/20'
+              : 'border-slate-300 dark:border-navy-border focus:border-accent-500 focus:ring-4 focus:ring-accent-500/20'
+              }`}
+            {...register('bio')}
+          />
+          {errors.bio?.message && (
+            <span className="text-[10px] text-red-500 font-semibold">{errors.bio.message}</span>
+          )}
+        </div>
+      </div>
+
+      {/* Submit Button */}
+      <div className="flex justify-end gap-3 mt-6">
         <Button
           type="submit"
           variant="primary"
+          size="lg"
+          className="px-10 py-3.5 text-xs font-extrabold shadow-md hover:shadow-lg hover:bg-accent-700 hover:scale-[1.01] active:scale-[0.98] transition-all duration-150 rounded-xl"
           isLoading={isPending}
+          disabled={!isEdit && selectedFiles.length === 0}
         >
-          {isEdit ? 'Save Changes' : 'Create Model'}
+          {isEdit ? 'Save Changes' : 'Add Model'}
         </Button>
       </div>
+
+      {/* Lightbox Modal for Image Preview */}
+      {previewImageUrl && (
+        <div className="fixed inset-0 z-[300] bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="absolute inset-0" onClick={() => setPreviewImageUrl(null)} />
+          <div className="relative max-w-4xl max-h-[85vh] bg-white dark:bg-navy-card rounded-2xl overflow-hidden shadow-2xl z-10 flex flex-col border dark:border-navy-border">
+            <div className="absolute top-3 right-3 z-20">
+              <button
+                type="button"
+                onClick={() => setPreviewImageUrl(null)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-navy-950 dark:hover:bg-navy-900 border dark:border-navy-border text-slate-505 dark:text-slate-400 flex items-center justify-center transition-colors shadow-sm focus:outline-none"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-2 flex-1 flex items-center justify-center bg-slate-50 dark:bg-navy-950">
+              <img
+                src={previewImageUrl}
+                alt="Portfolio Preview"
+                className="max-h-[70vh] max-w-full rounded-lg object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 };

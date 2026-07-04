@@ -19,4 +19,12 @@ export interface PaginationQuery {
     order?: 'asc' | 'desc';
     status?: string;
     search?: string;
+    gender?: string;
+    country?: string;
+    state?: string;
+    city?: string;
+    minAge?: number;
+    maxAge?: number;
+    minHeight?: number;
+    maxHeight?: number;
 }

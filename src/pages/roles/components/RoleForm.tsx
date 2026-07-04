@@ -209,7 +209,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({ selectedRole, onSuccess, onC
             leftIcon={<Save className="w-4 h-4" />}
             className="shadow-sm cursor-pointer font-bold tracking-wider text-xs px-4 py-2 whitespace-nowrap"
           >
-            {selectedRole === '' ? 'Create Role' : 'Save Changes'}
+            {selectedRole === '' ? 'Add Role' : 'Save Changes'}
           </Button>
         )}
       </div>

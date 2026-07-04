@@ -1,11 +1,9 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import ReduxProvider from './redux/Provider';
 import { useAppSelector } from './redux/hooks';
 import { useCurrentUserDataQuery } from './redux/services/auth';
-import { queryClient } from './pages/models/queryClient';
 import { AbilityProvider } from './context/AbilityContext';
 import AppRoutes from './routes/AppRoutes';
 import './App.css';
@@ -31,14 +29,12 @@ const AppContent: React.FC = () => {
 function App() {
   return (
     <ReduxProvider>
-      <QueryClientProvider client={queryClient}>
-        <AbilityProvider>
-          <BrowserRouter>
-            <AppContent />
-            <Toaster position="top-right" reverseOrder={false} />
-          </BrowserRouter>
-        </AbilityProvider>
-      </QueryClientProvider>
+      <AbilityProvider>
+        <BrowserRouter>
+          <AppContent />
+          <Toaster position="top-right" reverseOrder={false} />
+        </BrowserRouter>
+      </AbilityProvider>
     </ReduxProvider>
   );
 }

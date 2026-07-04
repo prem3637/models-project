@@ -1,7 +1,7 @@
 import React from 'react';
 import Login from '../pages/auth/Login';
 import ForgotPassword from '../pages/auth/ForgotPassword';
-import ModelDashboard from '../pages/models/ModelDashboard';
+import Dashboard from '../pages/dashboard/Dashboard';
 import ModelList from '../pages/models/ModelList';
 import ModelDetails from '../pages/models/ModelDetails';
 import ModelCreatePage from '../pages/models/ModelCreatePage';
@@ -45,7 +45,7 @@ export const routesConfig: RouteConfig[] = [
   },
   {
     path: '/dashboard',
-    element: ModelDashboard,
+    element: Dashboard,
     isPrivate: true,
     requiredPermission: {
       action: 'browse',

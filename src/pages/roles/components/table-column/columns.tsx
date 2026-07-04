@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatDate } from '../../../../utils/helperfunction';
 import { ColumnDef } from '@tanstack/react-table';
 import { Eye, Edit2, Trash2, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 
@@ -85,11 +86,7 @@ export const getRoleColumns = (): ColumnDef<RoleRowData, any>[] => [
     ),
     cell: ({ getValue }) => (
       <span className="text-slate-600 dark:text-slate-400 font-medium">
-        {new Date(getValue<string>()).toLocaleDateString(undefined, {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric'
-        })}
+        {formatDate(getValue<string>())}
       </span>
     )
   },
@@ -103,11 +100,7 @@ export const getRoleColumns = (): ColumnDef<RoleRowData, any>[] => [
     ),
     cell: ({ getValue }) => (
       <span className="text-slate-600 dark:text-slate-400 font-medium">
-        {new Date(getValue<string>()).toLocaleDateString(undefined, {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric'
-        })}
+        {formatDate(getValue<string>())}
       </span>
     )
   },

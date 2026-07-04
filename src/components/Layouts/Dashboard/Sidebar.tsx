@@ -1,6 +1,7 @@
 import React from 'react';
 import SidebarLink, { NavItem } from './SidebarLink';
 import SidebarFooter from './SidebarFooter';
+import { useNavigate } from 'react-router-dom';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -21,15 +22,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
   currentPathname,
   onLogout
 }) => {
+  const navigate = useNavigate()
   return (
     <aside
-      className={`fixed inset-y-0 left-0 bg-slate-100 dark:bg-navy-card border-r border-slate-200 dark:border-navy-border flex flex-col z-50 transition-all duration-300 overflow-hidden ${
-        sidebarOpen ? 'w-64 translate-x-0' : 'w-20 -translate-x-full md:translate-x-0 md:w-20'
-      }`}
+      className={`fixed inset-y-0 left-0 bg-slate-100 dark:bg-navy-card border-r border-slate-200 dark:border-navy-border flex flex-col z-50 transition-all duration-300 overflow-hidden ${sidebarOpen ? 'w-64 translate-x-0' : 'w-20 -translate-x-full md:translate-x-0 md:w-20'
+        }`}
     >
       {/* Sidebar Header / Logo */}
       <div className="h-16 flex items-center px-4 border-b border-slate-200 dark:border-navy-border relative justify-center">
-        <div className="flex items-center justify-center overflow-hidden w-full">
+        <div className="flex items-center justify-center overflow-hidden w-full cursor-pointer" onClick={() => { navigate("/") }}>
           {sidebarOpen ? (
             <img src="/logo.png" alt="Pizlio Models Logo" className="h-8 object-contain dark:invert select-none" />
           ) : (

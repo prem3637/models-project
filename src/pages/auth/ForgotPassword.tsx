@@ -3,6 +3,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { useForgotPasswordMutation } from '../../redux/services/auth';
 import FormInput from '../../components/ui/FormInput';
 import Button from '../../components/ui/Button';
 
@@ -14,14 +16,22 @@ type ForgotPasswordForm = z.infer<typeof ForgotPasswordSchema>;
 
 export const ForgotPassword: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [forgotPasswordApi, { isLoading }] = useForgotPasswordMutation();
 
   const { register, handleSubmit, formState: { errors } } = useForm<ForgotPasswordForm>({
     resolver: zodResolver(ForgotPasswordSchema),
     mode: 'onChange'
   });
 
-  const onSubmit = (data: ForgotPasswordForm) => {
-    setIsSubmitted(true);
+  const onSubmit = async (data: ForgotPasswordForm) => {
+    try {
+      await forgotPasswordApi({ email: data.email }).unwrap();
+      setIsSubmitted(true);
+      toast.success('Reset link sent successfully to your email');
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.data?.message || err?.message || 'Failed to send reset link');
+    }
   };
 
   return (
@@ -30,7 +40,7 @@ export const ForgotPassword: React.FC = () => {
         <>
           <div className="flex flex-col gap-1 text-center">
             <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Forgot Password?</h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Enter your email and we'll send you recovery instructions</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Enter your email and we'll send you a password reset link</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
@@ -43,8 +53,8 @@ export const ForgotPassword: React.FC = () => {
               {...register('email')}
             />
 
-            <Button type="submit" variant="primary" className="w-full mt-2">
-              Send Instructions
+            <Button type="submit" variant="primary" className="w-full mt-2" isLoading={isLoading}>
+              Send Reset Link
             </Button>
           </form>
         </>
@@ -56,9 +66,9 @@ export const ForgotPassword: React.FC = () => {
             </svg>
           </div>
           <div className="flex flex-col gap-1.5">
-            <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100">Instructions Sent</h1>
+            <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100">Reset Link Sent</h1>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Check your inbox. We have sent password reset instructions to your registered email.
+              Check your inbox. We have sent a password reset link to your registered email address.
             </p>
           </div>
         </div>

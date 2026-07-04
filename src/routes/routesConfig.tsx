@@ -1,6 +1,7 @@
 import React from 'react';
 import Login from '../pages/auth/Login';
 import ForgotPassword from '../pages/auth/ForgotPassword';
+import ResetPassword from '../pages/auth/ResetPassword';
 import Dashboard from '../pages/dashboard/Dashboard';
 import ModelList from '../pages/models/ModelList';
 import ModelDetails from '../pages/models/ModelDetails';
@@ -41,6 +42,11 @@ export const routesConfig: RouteConfig[] = [
   {
     path: '/forgot-password',
     element: ForgotPassword,
+    isPrivate: false
+  },
+  {
+    path: '/reset-password',
+    element: ResetPassword,
     isPrivate: false
   },
   {

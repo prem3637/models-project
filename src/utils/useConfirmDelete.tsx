@@ -1,5 +1,7 @@
 import toast from "react-hot-toast";
 import * as React from "react";
+import { getErrorMessage } from "./errorHelper";
+
 
 type DeleteCallback<T> = (item: T) => Promise<void> | void;
 
@@ -35,7 +37,7 @@ export const useConfirmDelete = <T extends { id: string | number }>(
                   toast.dismiss(loadingToast);
                   toast.success(`${name} deleted successfully`);
                 } catch (error: any) {
-                  const errorMessage = error?.data?.message || `Failed to delete ${name}`;
+                  const errorMessage = getErrorMessage(error, `Failed to delete ${name}`);
                   toast.dismiss(loadingToast);
                   toast.error(errorMessage);
                   console.error("Error deleting:", error);

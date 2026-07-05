@@ -2,6 +2,7 @@ import React from 'react';
 import Login from '../pages/auth/Login';
 import ForgotPassword from '../pages/auth/ForgotPassword';
 import ResetPassword from '../pages/auth/ResetPassword';
+import PublicModelDetails from '../pages/models/PublicModelDetails';
 import Dashboard from '../pages/dashboard/Dashboard';
 import ModelList from '../pages/models/ModelList';
 import ModelDetails from '../pages/models/ModelDetails';
@@ -21,6 +22,7 @@ export interface RouteConfig {
   path?: string;
   element?: React.ComponentType;
   isPrivate?: boolean;
+  bypassAuthGuard?: boolean;
   requiredPermission?: {
     action: string;
     subject: string;
@@ -48,6 +50,12 @@ export const routesConfig: RouteConfig[] = [
     path: '/reset-password',
     element: ResetPassword,
     isPrivate: false
+  },
+  {
+    path: '/models/share/:token',
+    element: PublicModelDetails,
+    isPrivate: false,
+    bypassAuthGuard: true
   },
   {
     path: '/dashboard',

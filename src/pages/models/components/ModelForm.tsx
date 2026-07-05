@@ -16,6 +16,7 @@ import StateSingleSelect from '../../../components/ui/StateSingleSelect';
 import CitySingleSelect from '../../../components/ui/CitySingleSelect';
 import PhoneInputField from '../../../components/ui/PhoneInputField';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../../utils/errorHelper';
 import { useConfirmDelete } from '../../../utils/useConfirmDelete';
 import { parsePhoneString } from '../../../utils/helperfunction';
 
@@ -229,7 +230,7 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
       }
     } catch (err: any) {
       console.error('Failed to submit model form', err);
-      toast.error(err?.data?.message || err?.message || 'Submission failed');
+      toast.error(getErrorMessage(err, 'Submission failed'));
     }
   };
 

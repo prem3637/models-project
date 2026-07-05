@@ -51,6 +51,9 @@ export const AppRoutes: React.FC = () => {
               <DashboardLayout>{content}</DashboardLayout>
             </PrivateRoute>
           );
+        } else if (route.bypassAuthGuard) {
+          // Render the component directly without Auth guards or layouts
+          content = <>{content}</>;
         } else {
           content = (
             <PublicRoute>

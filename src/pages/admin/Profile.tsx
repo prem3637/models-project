@@ -3,6 +3,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../utils/errorHelper';
 import { useAppSelector } from '../../redux/hooks';
 import { useUpdateProfileMutation } from '../../redux/services/auth';
 import Button from '../../components/ui/Button';
@@ -136,7 +137,7 @@ export const Profile: React.FC = () => {
       toast.success('Profile updated successfully!');
     } catch (err) {
       console.error(err);
-      toast.error((err as any)?.data?.message || (err as any)?.message || 'Failed to update profile');
+      toast.error(getErrorMessage(err, 'Failed to update profile'));
     }
   };
 

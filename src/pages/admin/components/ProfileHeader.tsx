@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../../utils/errorHelper';
 import { IUser } from '../../../interface/user';
 import { useUploadProfilePictureMutation } from '../../../redux/services/auth';
 import ImageCropper from '../../../components/ui/ImageCropper';
@@ -59,7 +60,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user }) => {
         {
           loading: 'Removing profile picture...',
           success: 'Profile picture removed successfully!',
-          error: 'Failed to remove profile picture',
+          error: (err: any) => getErrorMessage(err, 'Failed to remove profile picture'),
         }
       );
     } catch (err) {
@@ -79,6 +80,28 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user }) => {
       e.target.value = '';
     }
   };
+
+  const handleCropDone = async (croppedBlob: Blob) => {
+    if (cropperImgSrc && cropperImgSrc.startsWith('blob:')) {
+      URL.revokeObjectURL(cropperImgSrc);
+    }
+    setCropperImgSrc(null);
+
+    const file = new File([croppedBlob], 'profile-picture.jpg', { type: 'image/jpeg' });
+    try {
+      await toast.promise(
+        uploadProfilePicture({ file }).unwrap(),
+        {
+          loading: 'Uploading cropped profile picture...',
+          success: 'Profile picture updated successfully!',
+          error: (err: any) => getErrorMessage(err, 'Failed to upload profile picture'),
+        }
+      );
+    } catch (err) {
+      console.error('Cropped picture upload error:', err);
+    }
+  };
+
 
   return (
     <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border rounded-2xl shadow-sm transition-colors duration-200">
@@ -228,31 +251,12 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user }) => {
           imageSrc={cropperImgSrc}
           aspectRatio={1}
           onCancel={() => {
-            if (cropperImgSrc.startsWith('blob:')) {
+            if (cropperImgSrc && cropperImgSrc.startsWith('blob:')) {
               URL.revokeObjectURL(cropperImgSrc);
             }
             setCropperImgSrc(null);
           }}
-          onCropDone={async (croppedBlob) => {
-            if (cropperImgSrc.startsWith('blob:')) {
-              URL.revokeObjectURL(cropperImgSrc);
-            }
-            setCropperImgSrc(null);
-
-            const file = new File([croppedBlob], 'profile-picture.jpg', { type: 'image/jpeg' });
-            try {
-              await toast.promise(
-                uploadProfilePicture({ file }).unwrap(),
-                {
-                  loading: 'Uploading cropped profile picture...',
-                  success: 'Profile picture updated successfully!',
-                  error: 'Failed to upload profile picture',
-                }
-              );
-            } catch (err) {
-              console.error('Cropped picture upload error:', err);
-            }
-          }}
+          onCropDone={handleCropDone}
         />
       )}
     </div>

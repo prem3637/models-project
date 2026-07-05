@@ -6,6 +6,7 @@ import { useAppAbility } from '../../context/AbilityContext';
 import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
 import { useConfirmDelete } from '../../utils/useConfirmDelete';
+import ShareModelModal from './components/ShareModelModal';
 
 export const ModelDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +21,8 @@ export const ModelDetails: React.FC = () => {
     await deleteModel(item.id).unwrap();
     navigate('/models');
   });
+
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   // Helper to extract clean filename
   const getCleanFileName = (path: string) => {
@@ -128,6 +131,19 @@ export const ModelDetails: React.FC = () => {
         </Link>
 
         <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setIsShareModalOpen(true)}
+            variant="secondary"
+            size="sm"
+            className="dark:bg-[#0f1422] dark:border-navy-border dark:text-slate-350 dark:hover:bg-slate-800"
+            leftIcon={
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 10.742l4.57 2.286M13.254 9.972l-4.57 2.286M15 13a3 3 0 11-6 0 3 3 0 016 0zm6-6a3 3 0 11-6 0 3 3 0 016 0zM6 18a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            }
+          >
+            Share Profile
+          </Button>
           {ability.can('update', 'models') && (
             <Button
               onClick={() => navigate(`/models/${model.id}/edit`)}
@@ -646,6 +662,13 @@ export const ModelDetails: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Share Profile Modal */}
+      <ShareModelModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        modelId={model.id}
+      />
     </div>
   );
 };

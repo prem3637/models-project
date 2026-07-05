@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../../utils/errorHelper';
 import Button from '../../../components/ui/Button';
 import { FormInput } from '../../../components/ui/FormInput';
 import { FormTextarea } from '../../../components/ui/FormTextarea';
@@ -139,7 +140,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({ selectedRole, onSuccess, onC
           onSuccess();
         })
         .catch((err: any) => {
-          toast.error(err?.data?.message || err?.message || 'Failed to create role');
+          toast.error(getErrorMessage(err, 'Failed to create role'));
         });
     } else {
       updateRole({
@@ -154,7 +155,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({ selectedRole, onSuccess, onC
           onSuccess();
         })
         .catch((err: any) => {
-          toast.error(err?.data?.message || err?.message || 'Failed to update role');
+          toast.error(getErrorMessage(err, 'Failed to update role'));
         });
     }
   };

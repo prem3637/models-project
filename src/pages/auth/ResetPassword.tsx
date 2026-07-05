@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../utils/errorHelper';
 import { useResetPasswordMutation } from '../../redux/services/auth';
 import FormInput from '../../components/ui/FormInput';
 import Button from '../../components/ui/Button';
@@ -54,7 +55,7 @@ export const ResetPassword: React.FC = () => {
       navigate('/login');
     } catch (err: any) {
       console.error(err);
-      toast.error(err?.data?.message || err?.message || 'Failed to reset password');
+      toast.error(getErrorMessage(err, 'Failed to reset password'));
     }
   };
 

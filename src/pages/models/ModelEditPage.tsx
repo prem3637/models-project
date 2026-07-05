@@ -7,6 +7,7 @@ import Button from '../../components/ui/Button';
 import envConfig from '../../config';
 import { useAppSelector } from '../../redux/hooks';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../utils/errorHelper';
 
 export const ModelEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -71,7 +72,7 @@ export const ModelEditPage: React.FC = () => {
 
       if (!uploadRes.ok) {
         const errJson = await uploadRes.json().catch(() => ({}));
-        throw new Error(errJson.message || 'Upload request failed');
+        throw new Error(getErrorMessage(errJson, 'Upload request failed'));
       }
 
       const { jobId } = await uploadRes.json();

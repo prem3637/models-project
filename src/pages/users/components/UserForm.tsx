@@ -3,6 +3,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../../utils/errorHelper';
 import Button from '../../../components/ui/Button';
 import FormInput from '../../../components/ui/FormInput';
 import SearchDropdown from '../../../components/ui/SearchDropdown';
@@ -206,7 +207,7 @@ export const UserForm: React.FC<UserFormProps> = ({ editing, onSuccess, readOnly
       }
     } catch (err: any) {
       console.error(err);
-      toast.error(err?.data?.message || err?.message || 'Failed to save user');
+      toast.error(getErrorMessage(err, 'Failed to save user'));
     }
   };
 

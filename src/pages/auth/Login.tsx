@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../utils/errorHelper';
 import { useLoginMutation } from '../../redux/services/auth';
 import FormInput from '../../components/ui/FormInput';
 import Button from '../../components/ui/Button';
@@ -34,7 +35,7 @@ export const Login: React.FC = () => {
       navigate('/dashboard');
     } catch (err) {
       console.error(err);
-      toast.error((err as any)?.data?.message || (err as any)?.message || 'Invalid credentials');
+      toast.error(getErrorMessage(err, 'Invalid credentials'));
     }
   };
 

@@ -111,6 +111,19 @@ export const modelsServiceApi = modelsApi.injectEndpoints({
                 method: "DELETE",
             }),
         }),
+        shareModelProfile: builder.mutation<any, { id: string; email: string }>({
+            query: ({ id, email }) => ({
+                url: `/models/${id}/share`,
+                method: "POST",
+                body: { email },
+            }),
+        }),
+        getPublicSharedModelDetails: builder.query<ModelDetailResponse, string>({
+            query: (token) => ({
+                url: `/models/share/details/${token}`,
+                method: "GET",
+            }),
+        }),
     }),
 });
 
@@ -121,4 +134,6 @@ export const {
     useUpdateModelMutation,
     useDeleteModelMutation,
     useRemoveModelFileMutation,
+    useShareModelProfileMutation,
+    useGetPublicSharedModelDetailsQuery,
 } = modelsServiceApi;

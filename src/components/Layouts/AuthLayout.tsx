@@ -21,7 +21,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
         {/* Content container */}
         <div className="bg-white/80 dark:bg-navy-card/85 backdrop-blur-md border border-slate-200/80 dark:border-navy-border rounded-2xl p-6 md:p-8 shadow-xl shadow-slate-200/60 dark:shadow-none">
           {children}
-        </div>``
+        </div>
       </div>
     </div>
   );

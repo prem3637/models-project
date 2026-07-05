@@ -27,10 +27,10 @@ export const getModelColumns = ({ onOpenDetails, onOpenEdit, onDelete, ability }
             className="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-navy-border shrink-0 shadow-sm"
           />
           <div className="flex flex-col min-w-0">
-            <span className="text-xs font-bold text-slate-800 dark:text-slate-205 group-hover:text-accent-600 transition-colors truncate">
+            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-accent-600 transition-colors truncate">
               {model.basicDeatils?.fullName || ''}
             </span>
-            <span className="text-[10px] text-slate-405 dark:text-slate-550 truncate font-medium">{model.basicDeatils?.email || ''}</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate font-medium">{model.basicDeatils?.email || ''}</span>
           </div>
         </div>
       );

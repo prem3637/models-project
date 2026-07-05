@@ -25,6 +25,13 @@
     --color-slate-150: #eae2d8;
     --color-slate-200: #dfd9d0; /* Darker sand-beige for visible borders */
     --color-slate-300: #cbbfae; /* More defined disabled and hover border sand-beige */
+
+    /* Phone Input Variables */
+    --phone-input-bg: #ffffff;
+    --phone-input-text: #0f172a;
+    --phone-input-border: #cbd5e1;
+    --phone-input-dropdown-selected-bg: #eff6ff;
+    --phone-input-dropdown-hover-bg: #f8fafc;
   }
 
   .dark {
@@ -47,6 +54,13 @@
     --color-slate-150: #27272a; /* Dark gray for borders/dividers */
     --color-slate-200: #f4f4f5; /* Clean high-contrast white text (was dark border color) */
     --color-slate-300: #ffffff; /* White text for table cell contents as requested! */
+
+    /* Phone Input Variables */
+    --phone-input-bg: #0f1422;
+    --phone-input-text: #f1f5f9;
+    --phone-input-border: #22163b;
+    --phone-input-dropdown-selected-bg: #2b174b;
+    --phone-input-dropdown-hover-bg: #1c0e35;
   }
 
   body {

@@ -10,6 +10,15 @@ export const PublicModelDetails: React.FC = () => {
   const { data: modelRes, isLoading, error } = useGetPublicSharedModelDetailsQuery(token || '');
   const model = modelRes?.data;
 
+  // Measurement unit formatter
+  const formatMeasurement = (value: string | number | undefined, defaultUnit: string): string => {
+    if (value === undefined || value === null) return '';
+    const str = String(value).trim();
+    if (str === '') return '';
+    if (/[a-zA-Z"']/.test(str)) return str;
+    return `${str} ${defaultUnit}`;
+  };
+
   // Gallery view mode: 'grid' | 'list'
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
@@ -300,16 +309,22 @@ export const PublicModelDetails: React.FC = () => {
                 <div className="flex justify-between items-center text-xs py-0.5">
                   <span className="font-bold text-slate-400 uppercase tracking-wider">Bust / Chest</span>
                   <span className="font-black text-slate-800 dark:text-slate-200">
-                    {model.measurements?.bust || model.measurements?.chest || 'N/A'}
+                    {model.measurements?.bust && model.measurements?.chest
+                      ? `${formatMeasurement(model.measurements.bust, 'in')} / ${formatMeasurement(model.measurements.chest, 'in')}`
+                      : formatMeasurement(model.measurements?.bust || model.measurements?.chest, 'in') || 'N/A'}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-xs py-0.5">
                   <span className="font-bold text-slate-400 uppercase tracking-wider">Waist</span>
-                  <span className="font-black text-slate-800 dark:text-slate-200">{model.measurements?.waist || 'N/A'}</span>
+                  <span className="font-black text-slate-800 dark:text-slate-200">
+                    {formatMeasurement(model.measurements?.waist, 'in') || 'N/A'}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center text-xs py-0.5">
                   <span className="font-bold text-slate-400 uppercase tracking-wider">Hips</span>
-                  <span className="font-black text-slate-800 dark:text-slate-200">{model.measurements?.hips || 'N/A'}</span>
+                  <span className="font-black text-slate-800 dark:text-slate-200">
+                    {formatMeasurement(model.measurements?.hips, 'in') || 'N/A'}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center text-xs py-0.5">
                   <span className="font-bold text-slate-400 uppercase tracking-wider">Shoe Size</span>
@@ -317,7 +332,9 @@ export const PublicModelDetails: React.FC = () => {
                 </div>
                 <div className="flex justify-between items-center text-xs py-0.5">
                   <span className="font-bold text-slate-400 uppercase tracking-wider">Shoulder width</span>
-                  <span className="font-black text-slate-800 dark:text-slate-200">{model.measurements?.shoulder || 'N/A'}</span>
+                  <span className="font-black text-slate-800 dark:text-slate-200">
+                    {formatMeasurement(model.measurements?.shoulder, 'cm') || 'N/A'}
+                  </span>
                 </div>
               </div>
             </div>

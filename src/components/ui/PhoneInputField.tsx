@@ -23,10 +23,10 @@ const PhoneInputField: React.FC<PhoneInputFieldProps> = ({
   disabled = false,
   className = "",
 }) => {
-  const bc = error ? "#ef4444" : "#cbd5e1";
+  const bc = error ? "#ef4444" : "var(--phone-input-border, #cbd5e1)";
 
   return (
-    <div className={`text-slate-900 ${className}`}>
+    <div className={`text-slate-900 dark:text-slate-100 ${className}`}>
       {label && (
         <label className="block mb-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
           {label}
@@ -43,10 +43,10 @@ const PhoneInputField: React.FC<PhoneInputFieldProps> = ({
             "--react-international-phone-height": "46px",
             "--react-international-phone-border-radius": "8px",
             "--react-international-phone-border-color": bc,
-            "--react-international-phone-background-color": "#ffffff",
-            "--react-international-phone-text-color": "#0f172a",
-            "--react-international-phone-selected-dropdown-item-background-color": "#eff6ff",
-            "--react-international-phone-country-selector-background-color-hover": "#f8fafc",
+            "--react-international-phone-background-color": "var(--phone-input-bg, #ffffff)",
+            "--react-international-phone-text-color": "var(--phone-input-text, #0f172a)",
+            "--react-international-phone-selected-dropdown-item-background-color": "var(--phone-input-dropdown-selected-bg, #eff6ff)",
+            "--react-international-phone-country-selector-background-color-hover": "var(--phone-input-dropdown-hover-bg, #f8fafc)",
             "--react-international-phone-font-size": "0.875rem",
             width: "100%",
           } as React.CSSProperties
@@ -62,7 +62,8 @@ const PhoneInputField: React.FC<PhoneInputFieldProps> = ({
           borderColor: bc,
           borderRadius: "0 8px 8px 0",
           fontSize: "0.875rem",
-          color: "#0f172a",
+          color: "var(--phone-input-text, #0f172a)",
+          backgroundColor: "var(--phone-input-bg, #ffffff)",
           outline: "none",
           paddingLeft: "10px",
         }}
@@ -78,7 +79,7 @@ const PhoneInputField: React.FC<PhoneInputFieldProps> = ({
             borderStyle: "solid",
             borderColor: bc,
             borderRadius: "8px 0 0 8px",
-            backgroundColor: "#ffffff",
+            backgroundColor: "var(--phone-input-bg, #ffffff)",
           },
         }}
       />

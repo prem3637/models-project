@@ -84,7 +84,7 @@ const UserCell: React.FC<{ user: IUser; onView: (user: IUser) => void }> = ({ us
         >
           {user.fullName}
         </button>
-        <span className="text-[10px] text-slate-400 dark:text-slate-555 truncate">{user.email}</span>
+        <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate">{user.email}</span>
       </div>
     </div>
   );

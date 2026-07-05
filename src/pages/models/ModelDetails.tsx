@@ -42,6 +42,14 @@ export const ModelDetails: React.FC = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const formatMeasurement = (value: string | number | undefined, defaultUnit: string): string => {
+    if (value === undefined || value === null) return '';
+    const str = String(value).trim();
+    if (str === '') return '';
+    if (/[a-zA-Z"']/.test(str)) return str;
+    return `${str} ${defaultUnit}`;
+  };
+
   // Gallery view mode: 'grid' | 'list'
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
@@ -557,31 +565,31 @@ export const ModelDetails: React.FC = () => {
               {model.measurements?.shoulder && (
                 <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all">
                   <span className="text-slate-400 font-bold text-[10px]  tracking-wider">Shoulder</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{model.measurements.shoulder}</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{formatMeasurement(model.measurements.shoulder, 'cm')}</span>
                 </div>
               )}
               {model.measurements?.chest && (
                 <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all">
                   <span className="text-slate-400 font-bold text-[10px]  tracking-wider">Chest</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{model.measurements.chest}</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{formatMeasurement(model.measurements.chest, 'in')}</span>
                 </div>
               )}
               {model.measurements?.bust && (
                 <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all">
                   <span className="text-slate-400 font-bold text-[10px]  tracking-wider">Bust</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{model.measurements.bust}</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{formatMeasurement(model.measurements.bust, 'in')}</span>
                 </div>
               )}
               {model.measurements?.waist && (
                 <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all">
                   <span className="text-slate-400 font-bold text-[10px]  tracking-wider">Waist</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{model.measurements.waist}</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{formatMeasurement(model.measurements.waist, 'in')}</span>
                 </div>
               )}
               {model.measurements?.hips && (
                 <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all">
                   <span className="text-slate-400 font-bold text-[10px]  tracking-wider">Hips</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{model.measurements.hips}</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{formatMeasurement(model.measurements.hips, 'in')}</span>
                 </div>
               )}
               {model.measurements?.shoe && (

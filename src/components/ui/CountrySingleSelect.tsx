@@ -15,6 +15,7 @@ interface CountrySingleSelectProps {
   limit?: number;
   disabled?: boolean;
   initialLabel?: string;
+  required?: boolean;
 }
 
 export const CountrySingleSelect: React.FC<CountrySingleSelectProps> = ({
@@ -27,6 +28,7 @@ export const CountrySingleSelect: React.FC<CountrySingleSelectProps> = ({
   limit = 15,
   disabled = false,
   initialLabel = "",
+  required = false,
 }) => {
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -77,6 +79,7 @@ export const CountrySingleSelect: React.FC<CountrySingleSelectProps> = ({
   return (
     <SearchDropdown
       label={label}
+      required={required}
       items={accumulatedItems}
       value={value}
       onChange={onChange}

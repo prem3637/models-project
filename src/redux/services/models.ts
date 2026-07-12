@@ -6,7 +6,8 @@ import { TAG_MODELS } from "../api-tags";
 
 
 export interface ModelPaginationQuery extends PaginationQuery {
-    category?: string;
+    modelType?: string;
+    bodyShape?: string;
     gender?: string;
     country?: string;
     state?: string;
@@ -38,7 +39,8 @@ export const modelsServiceApi = modelsApi.injectEndpoints({
                     order: params.order,
                     status: params.status,
                     search: params.search,
-                    category: params.category,
+                    modelType: params.modelType,
+                    bodyShape: params.bodyShape,
                     gender: params.gender,
                     country: params.country,
                     state: params.state,
@@ -91,6 +93,18 @@ export const modelsServiceApi = modelsApi.injectEndpoints({
                 body,
             }),
         }),
+        updateModelProfilePicture: builder.mutation<ModelDetailResponse, { id: string; body: FormData | { remove: boolean } }>({
+            invalidatesTags: (result, error, arg) => [
+                { type: TAG_MODELS, id: "LIST" },
+                { type: TAG_MODELS, id: arg.id },
+                { type: TAG_MODELS, id: "Details" },
+            ],
+            query: ({ id, body }) => ({
+                url: `/models/${id}/profile-picture`,
+                method: "PATCH",
+                body,
+            }),
+        }),
         deleteModel: builder.mutation<void, string>({
             invalidatesTags: [
                 { type: TAG_MODELS, id: "LIST" },
@@ -132,6 +146,7 @@ export const {
     useGetModelDetailsQuery,
     useAddModelMutation,
     useUpdateModelMutation,
+    useUpdateModelProfilePictureMutation,
     useDeleteModelMutation,
     useRemoveModelFileMutation,
     useShareModelProfileMutation,

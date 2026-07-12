@@ -29,11 +29,13 @@ export interface IModel {
         age: number;
         dob?: string;
         gender: "Male" | "Female" | "Other";
+        modelType?: string;
     };
     physicalCharacteristics: {
         complexion?: string;
         bodyShape?: string;
         eyeColor?: string;
+        hairColor?: string;
     };
     measurements: {
         height: string;
@@ -45,9 +47,11 @@ export interface IModel {
         eyeColor?: string;
         chest?: string;
         shoulder: string;
+        size?: string;
     };
     images: ImageResponse[]; // File references
     introVideo?: ImageResponse | null; // File reference
+    profilePicture?: ImageResponse | null; // Profile picture reference
     address: {
         addressLine1: string;
         addressLine2?: string;
@@ -85,11 +89,13 @@ export interface CreateModelRequest {
         age?: number;
         dob: string;
         gender: "Male" | "Female" | "Other";
+        modelType?: string;
     };
     physicalCharacteristics: {
         complexion?: string;
         bodyShape?: string;
         eyeColor?: string;
+        hairColor?: string;
     };
     measurements: {
         height: string;
@@ -100,6 +106,7 @@ export interface CreateModelRequest {
         shoe?: string;
         chest?: string;
         shoulder: string;
+        size?: string;
     };
     address: {
         addressLine1: string;
@@ -110,6 +117,7 @@ export interface CreateModelRequest {
         postalCode: string;
     };
     bio: string;
+    profilePicture?: any;
 }
 
 export type UpdateModelRequest = Partial<CreateModelRequest>;

@@ -2,26 +2,26 @@ import { z } from 'zod';
 
 const isValidHeightFeetInches = (heightStr: string): boolean => {
   const clean = heightStr.toLowerCase().trim();
-  
+
   if (clean.includes('.')) {
     const parts = clean.split('.');
     const ft = parseInt(parts[0], 10);
     const inc = parseInt(parts[1], 10) || 0;
     return ft >= 0 && ft <= 10 && inc >= 0 && inc <= 11;
   }
-  
+
   const match = clean.match(/^(\d+)\s*(?:fit|feet|ft|')?\s*(\d+)?\s*(?:inch|inches|in|")?$/);
   if (match) {
     const feet = parseInt(match[1], 10);
     const inches = match[2] ? parseInt(match[2], 10) : 0;
     return feet >= 0 && feet <= 10 && inches >= 0 && inches <= 11;
   }
-  
+
   const num = parseFloat(clean);
   if (!isNaN(num) && num >= 0 && num <= 305) {
     return true;
   }
-  
+
   return false;
 };
 
@@ -43,11 +43,13 @@ export const ModelFormSchema = z.object({
     age: z.number().optional(),
     dob: z.string().min(1, 'Date of birth is required'),
     gender: z.enum(['Male', 'Female', 'Other']),
+    modelType: z.string().min(1, 'Model type is required'),
   }),
   physicalCharacteristics: z.object({
     complexion: z.string().optional(),
     bodyShape: z.string().optional(),
     eyeColor: z.string().optional(),
+    hairColor: z.string().optional(),
   }),
   measurements: z.object({
     height: z.string()
@@ -59,7 +61,8 @@ export const ModelFormSchema = z.object({
     hips: z.string().optional(),
     shoe: z.string().optional(),
     chest: z.string().optional(),
-    shoulder: z.string().min(2, 'Shoulder width must be specified'),
+    shoulder: z.string().optional(),
+    size: z.string().min(1, 'Size is required'),
   }),
   address: z.object({
     addressLine1: z.string().min(2, 'Address Line 1 must be specified'),
@@ -73,6 +76,7 @@ export const ModelFormSchema = z.object({
     .min(10, 'Bio must be at least 10 characters')
     .max(1000, 'Bio must not exceed 1000 characters'),
   files: z.array(z.any()).optional(),
+  profilePicture: z.any().optional(),
 });
 
 export type ModelFormData = z.infer<typeof ModelFormSchema>;

@@ -16,6 +16,7 @@ interface CitySingleSelectProps {
   disabled?: boolean;
   stateId: string;
   initialLabel?: string;
+  required?: boolean;
 }
 
 export const CitySingleSelect: React.FC<CitySingleSelectProps> = ({
@@ -29,6 +30,7 @@ export const CitySingleSelect: React.FC<CitySingleSelectProps> = ({
   disabled = false,
   stateId,
   initialLabel = "",
+  required = false,
 }) => {
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -86,6 +88,7 @@ export const CitySingleSelect: React.FC<CitySingleSelectProps> = ({
   return (
     <SearchDropdown
       label={label}
+      required={required}
       items={accumulatedItems}
       value={value}
       onChange={onChange}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
 import { IModel } from '../../../../interface/model';
-import { Eye, Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 
 const columnHelper = createColumnHelper<IModel>();
 
@@ -18,7 +18,7 @@ export const getModelColumns = ({ onOpenDetails, onOpenEdit, onDelete, ability }
     header: 'Model',
     cell: info => {
       const model = info.row.original;
-      const imageUrl = model.images?.[0]?.url || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&h=600&fit=crop';
+      const imageUrl = model.profilePicture?.url || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
       return (
         <div className="flex items-center gap-3 cursor-pointer group" onClick={() => onOpenDetails(model)}>
           <img
@@ -44,7 +44,7 @@ export const getModelColumns = ({ onOpenDetails, onOpenEdit, onDelete, ability }
   columnHelper.accessor(row => row.basicDeatils?.age, {
     id: 'age',
     header: 'Age',
-    cell: info => <span className="text-xs text-slate-700 dark:text-slate-300 font-semibold">{info.getValue() ? `${info.getValue()} yrs` : ''}</span>
+    cell: info => <span className="text-xs text-slate-700 dark:text-slate-300 font-semibold">{info.getValue() ? `${info.getValue()} yrs` : '0 yrs'}</span>
   }),
   columnHelper.accessor(row => row.measurements?.height, {
     id: 'height',
@@ -55,6 +55,16 @@ export const getModelColumns = ({ onOpenDetails, onOpenEdit, onDelete, ability }
     id: 'weight',
     header: 'Weight',
     cell: info => <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{info.getValue() ? `${info.getValue()} kg` : ''}</span>
+  }),
+  columnHelper.accessor(row => row.physicalCharacteristics?.bodyShape, {
+    id: 'bodyShape',
+    header: 'Body Shape',
+    cell: info => <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{info.getValue() || 'N/A'}</span>
+  }),
+  columnHelper.accessor(row => row.basicDeatils?.modelType, {
+    id: 'modelType',
+    header: 'Body Type',
+    cell: info => <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{info.getValue() || 'N/A'}</span>
   }),
   columnHelper.accessor(row => row.address?.country, {
     id: 'country',
@@ -78,13 +88,6 @@ export const getModelColumns = ({ onOpenDetails, onOpenEdit, onDelete, ability }
       const model = info.row.original;
       return (
         <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => onOpenDetails(model)}
-            title="View Profile"
-            className="p-1.5 rounded border border-transparent text-green-600 hover:text-green-700 dark:text-green-405 dark:hover:text-green-300 hover:bg-green-50 hover:border-green-200/50 dark:hover:bg-green-950/20 dark:hover:bg-green-900/30 transition-colors cursor-pointer"
-          >
-            <Eye className="w-3.5 h-3.5" />
-          </button>
           {ability.can('update', 'models') && (
             <button
               onClick={() => onOpenEdit(model)}

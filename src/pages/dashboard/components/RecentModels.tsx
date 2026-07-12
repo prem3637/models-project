@@ -26,7 +26,7 @@ export const RecentModels: React.FC<RecentModelsProps> = ({ stats }) => {
             recentModels.map(m => (
               <div key={m.id} className="flex items-center gap-3">
                 <img
-                  src={m.imageUrl || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&h=600&fit=crop'}
+                  src={m.imageUrl || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'}
                   alt={m.fullName}
                   className="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-slate-800 shadow-sm shrink-0"
                 />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { formatDate } from '../../utils/helperfunction';
+import { formatDate, getCleanFileName, formatFileSize, formatMeasurement } from '../../utils/helperfunction';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useGetModelDetailsQuery, useDeleteModelMutation } from '../../redux/services/models';
 import { useAppAbility } from '../../context/AbilityContext';
@@ -7,6 +7,8 @@ import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
 import { useConfirmDelete } from '../../utils/useConfirmDelete';
 import ShareModelModal from './components/ShareModelModal';
+import { ProfilePictureUploader } from './components/ProfilePictureUploader';
+
 
 export const ModelDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -24,37 +26,12 @@ export const ModelDetails: React.FC = () => {
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
-  // Helper to extract clean filename
-  const getCleanFileName = (path: string) => {
-    if (!path) return 'Portfolio Asset';
-    const parts = path.split('/');
-    const lastPart = parts[parts.length - 1];
-    return lastPart.replace(/^\d+-\d+-/, '').replace(/^\d+-/, '');
-  };
-
-  // File size formatter
-  const formatFileSize = (bytes: number) => {
-    if (!bytes) return 'N/A';
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  const formatMeasurement = (value: string | number | undefined, defaultUnit: string): string => {
-    if (value === undefined || value === null) return '';
-    const str = String(value).trim();
-    if (str === '') return '';
-    if (/[a-zA-Z"']/.test(str)) return str;
-    return `${str} ${defaultUnit}`;
-  };
-
   // Gallery view mode: 'grid' | 'list'
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // Lightbox State
   const [activeImageIndex, setActiveImageIndex] = useState<number | null>(null);
+  const [isBioExpanded, setIsBioExpanded] = useState(false);
 
   // Keyboard navigation for Lightbox
   useEffect(() => {
@@ -114,7 +91,7 @@ export const ModelDetails: React.FC = () => {
     }
   };
 
-  const primaryImageUrl = model.images?.[0]?.url || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&h=600&fit=crop';
+  const primaryImageUrl = model.profilePicture?.url || '';
 
   const formattedPrimaryContact = model.basicDeatils?.primartContact
     ? `${model.basicDeatils.primartContact.code} ${model.basicDeatils.primartContact.number}`
@@ -189,31 +166,13 @@ export const ModelDetails: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2 flex flex-col gap-6">
           {/* Main Info Card */}
-          <div className="bg-gradient-to-br from-white via-slate-50/50 to-slate-100/50 dark:from-navy-card dark:via-navy-950/10 dark:to-navy-card border border-slate-200 dark:border-navy-border rounded-2xl p-6 flex flex-col sm:flex-row gap-6 shadow-sm relative transition-all duration-200">
-            <div className="relative shrink-0">
-              <div
-                onClick={() => {
-                  if (model?.images && model.images.length > 0) {
-                    setActiveImageIndex(0);
-                  }
-                }}
-                className="w-32 h-44 rounded-2xl overflow-hidden border border-slate-200 dark:border-navy-border shadow-md ring-4 ring-slate-100/80 dark:ring-navy-900/50 relative group cursor-pointer"
-              >
-                <img
-                  src={primaryImageUrl}
-                  alt={model.basicDeatils?.fullName}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                {/* Hover overlay for profile view */}
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center text-white text-center gap-1.5 p-2">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                  <span className="text-[9px] font-bold  tracking-wider">View Photo</span>
-                </div>
-              </div>
-            </div>
+          <div className="bg-gradient-to-br from-white via-slate-50/50 to-slate-100/50 dark:from-navy-card dark:via-navy-950/10 dark:to-navy-card border border-slate-200 dark:border-navy-border rounded-2xl p-6 flex flex-col sm:flex-row items-center sm:items-center gap-6 shadow-sm relative transition-all duration-200">
+            <ProfilePictureUploader
+              modelId={model.id}
+              fullName={model.basicDeatils?.fullName}
+              profilePictureUrl={primaryImageUrl}
+              editable={ability.can('update', 'models')}
+            />
 
             <div className="flex-1 flex flex-col justify-between gap-4">
               <div className="flex flex-col gap-2.5">
@@ -249,6 +208,25 @@ export const ModelDetails: React.FC = () => {
                     </div>
                   )}
                 </div>
+                {model.bio && (
+                  <div className="mt-2.5 max-w-xl">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 italic leading-relaxed">
+                      {model.bio.length > 120 ? (
+                        <>
+                          "{isBioExpanded ? model.bio : `${model.bio.slice(0, 110)}...`}"
+                          <button
+                            onClick={() => setIsBioExpanded(!isBioExpanded)}
+                            className="inline-block text-[10px] font-black text-accent-500 hover:text-accent-600 dark:hover:text-accent-400 ml-1.5 cursor-pointer transition-colors align-baseline"
+                          >
+                            {isBioExpanded ? 'See Less' : 'See More'}
+                          </button>
+                        </>
+                      ) : (
+                        `"${model.bio}"`
+                      )}
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-3 gap-3 text-center mt-1">
@@ -562,6 +540,24 @@ export const ModelDetails: React.FC = () => {
                   <span className="font-bold text-slate-800 dark:text-slate-200">{model.physicalCharacteristics.bodyShape}</span>
                 </div>
               )}
+              {model.physicalCharacteristics?.hairColor && (
+                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all">
+                  <span className="text-slate-400 font-bold text-[10px]  tracking-wider">Hair Color</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{model.physicalCharacteristics.hairColor}</span>
+                </div>
+              )}
+              {model.basicDeatils?.modelType && (
+                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all">
+                  <span className="text-slate-400 font-bold text-[10px]  tracking-wider">Model Type</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{model.basicDeatils.modelType}</span>
+                </div>
+              )}
+              {model.measurements?.size && (
+                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all">
+                  <span className="text-slate-400 font-bold text-[10px]  tracking-wider">Size Chart</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">{model.measurements.size}</span>
+                </div>
+              )}
               {model.measurements?.shoulder && (
                 <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all">
                   <span className="text-slate-400 font-bold text-[10px]  tracking-wider">Shoulder</span>
@@ -604,20 +600,6 @@ export const ModelDetails: React.FC = () => {
                   <span className="font-bold text-slate-800 dark:text-slate-200">{model.physicalCharacteristics.eyeColor}</span>
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Biography Card */}
-          <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border rounded-2xl p-6 shadow-sm flex flex-col gap-4 transition-colors duration-200">
-            <h3 className="text-xs font-black text-slate-400 dark:text-slate-550  tracking-widest border-b border-slate-100 dark:border-navy-border/50 pb-2.5">
-              Biography
-            </h3>
-            <div className="relative">
-              {/* Quote Mark Watermark */}
-              <span className="absolute -top-3 -left-2 text-slate-100 dark:text-navy-950 font-serif text-5xl select-none leading-none -z-10 opacity-60">“</span>
-              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed italic bg-slate-50/40 dark:bg-navy-950/20 p-4 rounded-xl border border-slate-100 dark:border-navy-border/20 relative z-10">
-                {model.bio || 'No biography details provided.'}
-              </p>
             </div>
           </div>
         </div>
@@ -670,6 +652,8 @@ export const ModelDetails: React.FC = () => {
           </div>
         </div>
       )}
+
+
 
       {/* Share Profile Modal */}
       <ShareModelModal

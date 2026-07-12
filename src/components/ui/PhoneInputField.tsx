@@ -11,6 +11,7 @@ interface PhoneInputFieldProps {
   helperText?: string;
   disabled?: boolean;
   className?: string;
+  required?: boolean;
 }
 
 const PhoneInputField: React.FC<PhoneInputFieldProps> = ({
@@ -22,14 +23,16 @@ const PhoneInputField: React.FC<PhoneInputFieldProps> = ({
   helperText,
   disabled = false,
   className = "",
+  required = false,
 }) => {
   const bc = error ? "#ef4444" : "var(--phone-input-border, #cbd5e1)";
 
   return (
     <div className={`text-slate-900 dark:text-slate-100 ${className}`}>
       {label && (
-        <label className="block mb-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+        <label className="block mb-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 capitalize tracking-wider flex items-center gap-0.5">
           {label}
+          {required && <span className="text-red-500 font-bold">*</span>}
         </label>
       )}
 

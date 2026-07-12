@@ -4,20 +4,13 @@ import { useGetPublicSharedModelDetailsQuery } from '../../redux/services/models
 import Skeleton from '../../components/ui/Skeleton';
 import { getErrorMessage } from '../../utils/errorHelper';
 import Unauthorized from '../../components/ui/Unauthorized';
+import { formatMeasurement } from '../../utils/helperfunction';
 
 export const PublicModelDetails: React.FC = () => {
   const { token } = useParams<{ token: string }>();
   const { data: modelRes, isLoading, error } = useGetPublicSharedModelDetailsQuery(token || '');
   const model = modelRes?.data;
 
-  // Measurement unit formatter
-  const formatMeasurement = (value: string | number | undefined, defaultUnit: string): string => {
-    if (value === undefined || value === null) return '';
-    const str = String(value).trim();
-    if (str === '') return '';
-    if (/[a-zA-Z"']/.test(str)) return str;
-    return `${str} ${defaultUnit}`;
-  };
 
   // Gallery view mode: 'grid' | 'list'
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -72,7 +65,7 @@ export const PublicModelDetails: React.FC = () => {
     );
   }
 
-  const primaryImageUrl = model.images?.[0]?.url || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&h=600&fit=crop';
+  const primaryImageUrl = model.profilePicture?.url || '';
   
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-navy-950 text-slate-800 dark:text-slate-100 transition-colors duration-200 font-sans pb-16">
@@ -99,28 +92,39 @@ export const PublicModelDetails: React.FC = () => {
           <div className="lg:col-span-2 flex flex-col gap-6">
             
             {/* Primary Details Card */}
-            <div className="bg-gradient-to-br from-white via-slate-50/50 to-slate-100/50 dark:from-navy-card dark:via-navy-950/10 dark:to-navy-card border border-slate-200 dark:border-navy-border rounded-3xl p-6 flex flex-col sm:flex-row gap-6 shadow-sm relative">
+            <div className="bg-gradient-to-br from-white via-slate-50/50 to-slate-100/50 dark:from-navy-card dark:via-navy-950/10 dark:to-navy-card border border-slate-200 dark:border-navy-border rounded-3xl p-6 flex flex-col sm:flex-row items-center sm:items-center gap-6 shadow-sm relative">
               <div className="relative shrink-0">
                 <div
                   onClick={() => {
-                    if (model?.images && model.images.length > 0) {
-                      setActiveImageIndex(0);
+                    if (primaryImageUrl) {
+                      // We can preview it or do nothing
+                      // wait, let's keep it consistent
                     }
                   }}
-                  className="w-36 h-48 rounded-2xl overflow-hidden border border-slate-200 dark:border-navy-border shadow-md ring-4 ring-slate-100 dark:ring-navy-900/50 relative group cursor-pointer"
+                  className="w-36 h-48 sm:w-44 sm:h-56 rounded-2xl overflow-hidden border border-slate-200 dark:border-navy-border shadow-md ring-4 ring-slate-100 dark:ring-navy-900/50 relative group cursor-pointer"
                 >
-                  <img
-                    src={primaryImageUrl}
-                    alt={model.basicDeatils?.fullName}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center text-white text-center gap-1.5 p-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                    <span className="text-[10px] font-bold tracking-wider">View Photo</span>
-                  </div>
+                  {primaryImageUrl ? (
+                    <>
+                      <img
+                        src={primaryImageUrl}
+                        alt={model.basicDeatils?.fullName}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center text-white text-center gap-1.5 p-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        <span className="text-[10px] font-bold tracking-wider">View Photo</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="w-full h-full bg-slate-100 dark:bg-[#0c101d] flex items-center justify-center text-slate-400 dark:text-slate-550 transition-colors">
+                      <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -302,9 +306,25 @@ export const PublicModelDetails: React.FC = () => {
                   <span className="font-bold text-slate-400 uppercase tracking-wider">Body Shape</span>
                   <span className="font-black text-slate-800 dark:text-slate-200">{model.physicalCharacteristics?.bodyShape || 'N/A'}</span>
                 </div>
+                {model.basicDeatils?.modelType && (
+                  <div className="flex justify-between items-center text-xs py-0.5">
+                    <span className="font-bold text-slate-400 uppercase tracking-wider">Model Type</span>
+                    <span className="font-black text-slate-800 dark:text-slate-200">{model.basicDeatils.modelType}</span>
+                  </div>
+                )}
+                {model.measurements?.size && (
+                  <div className="flex justify-between items-center text-xs py-0.5">
+                    <span className="font-bold text-slate-400 uppercase tracking-wider">Size Chart</span>
+                    <span className="font-black text-slate-800 dark:text-slate-200">{model.measurements.size}</span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center text-xs py-0.5">
                   <span className="font-bold text-slate-400 uppercase tracking-wider">Eye Color</span>
                   <span className="font-black text-slate-800 dark:text-slate-200">{model.physicalCharacteristics?.eyeColor || 'N/A'}</span>
+                </div>
+                <div className="flex justify-between items-center text-xs py-0.5">
+                  <span className="font-bold text-slate-400 uppercase tracking-wider">Hair Color</span>
+                  <span className="font-black text-slate-800 dark:text-slate-200">{model.physicalCharacteristics?.hairColor || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between items-center text-xs py-0.5">
                   <span className="font-bold text-slate-400 uppercase tracking-wider">Bust / Chest</span>

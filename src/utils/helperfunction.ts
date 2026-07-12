@@ -148,3 +148,27 @@ export const parsePhoneString = (phoneStr: string) => {
     phone: withoutPlus.substring(2)
   };
 };
+
+export const formatMeasurement = (value: string | number | undefined, defaultUnit: string): string => {
+  if (value === undefined || value === null) return '';
+  const str = String(value).trim();
+  if (str === '') return '';
+  if (/[a-zA-Z"']/.test(str)) return str;
+  return `${str} ${defaultUnit}`;
+};
+
+export const formatFileSize = (bytes: number | undefined | null): string => {
+  if (!bytes) return 'N/A';
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
+
+export const getCleanFileName = (path: string | undefined | null): string => {
+  if (!path) return 'Portfolio Asset';
+  const filename = path.split('/').pop() || '';
+  return filename.replace(/^\d+-\d+-/, '').replace(/^\d+-/, '') || 'Portfolio Asset';
+};
+

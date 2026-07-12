@@ -12,6 +12,7 @@ interface SearchDropdownProps<T = any> {
   placeholder?: string;
   error?: string;
   className?: string;
+  required?: boolean;
 
   options?: DropdownOption[];
 
@@ -36,6 +37,7 @@ export function SearchDropdown<T = any>({
   placeholder = 'Select an option',
   error,
   className = '',
+  required = false,
   options,
   items,
   getValue,
@@ -171,8 +173,9 @@ export function SearchDropdown<T = any>({
       ref={containerRef}
     >
       {label && (
-        <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">
+        <span className="text-[10px] md:text-xs font-bold text-slate-500 capitalize tracking-wider flex items-center gap-0.5">
           {label}
+          {required && <span className="text-red-500 font-bold">*</span>}
         </span>
       )}
 

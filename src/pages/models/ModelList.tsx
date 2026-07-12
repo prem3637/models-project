@@ -30,6 +30,7 @@ export const ModelList: React.FC = () => {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({
     gender: '',
+    modelType: '',
   });
 
   const [selectedCountry, setSelectedCountry] = useState<string>('');
@@ -52,6 +53,7 @@ export const ModelList: React.FC = () => {
       order: sorting[0] ? (sorting[0].desc ? 'desc' : 'asc') : undefined,
       search: search || undefined,
       gender: filters.gender || undefined,
+      modelType: filters.modelType || undefined,
       country: selectedCountry || undefined,
       state: selectedState || undefined,
       city: selectedCity || undefined,
@@ -99,6 +101,7 @@ export const ModelList: React.FC = () => {
     setSearch('');
     setFilters({
       gender: '',
+      modelType: '',
     });
     setSelectedCountry('');
     setSelectedState('');
@@ -183,7 +186,7 @@ export const ModelList: React.FC = () => {
         </div>
 
         {/* Filters Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           <SearchDropdown
             label="Gender"
             value={filters.gender}
@@ -196,6 +199,18 @@ export const ModelList: React.FC = () => {
             ]}
           />
 
+          <SearchDropdown
+            label="Model Type"
+            value={filters.modelType}
+            onChange={val => { setFilters(prev => ({ ...prev, modelType: val })); setPagination(p => ({ ...p, pageIndex: 0 })); }}
+            options={[
+              { value: '', label: 'All Model Types' },
+              { value: 'Fresher', label: 'Fresher' },
+              { value: 'Experienced', label: 'Experienced' },
+              { value: 'Professional', label: 'Professional' },
+              { value: 'Influencer', label: 'Influencer' }
+            ]}
+          />
 
           <SearchDropdown
             label="Country"

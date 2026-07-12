@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import DatePicker from '../../../components/ui/DatePicker';
 import { ModelFormSchema, ModelFormData } from '../ModelSchema';
 import {
   useAddModelMutation,
@@ -18,7 +19,7 @@ import PhoneInputField from '../../../components/ui/PhoneInputField';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../../utils/errorHelper';
 import { useConfirmDelete } from '../../../utils/useConfirmDelete';
-import { parsePhoneString } from '../../../utils/helperfunction';
+import { parsePhoneString, getCleanFileName, formatFileSize } from '../../../utils/helperfunction';
 
 interface ModelFormProps {
   modelId?: string;
@@ -72,11 +73,13 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
         age: initialValues?.basicDeatils?.age || undefined,
         dob: initialValues?.basicDeatils?.dob ? new Date(initialValues.basicDeatils.dob).toISOString().split('T')[0] : '',
         gender: initialValues?.basicDeatils?.gender || 'Male',
+        modelType: initialValues?.basicDeatils?.modelType || 'Fresher',
       },
       physicalCharacteristics: {
         complexion: initialValues?.physicalCharacteristics?.complexion || '',
         bodyShape: initialValues?.physicalCharacteristics?.bodyShape || '',
         eyeColor: initialValues?.physicalCharacteristics?.eyeColor || '',
+        hairColor: initialValues?.physicalCharacteristics?.hairColor || '',
       },
       measurements: {
         height: initialValues?.measurements?.height || '',
@@ -87,6 +90,7 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
         shoe: initialValues?.measurements?.shoe || '',
         chest: initialValues?.measurements?.chest || '',
         shoulder: initialValues?.measurements?.shoulder || '',
+        size: initialValues?.measurements?.size || '',
       },
       address: {
         addressLine1: initialValues?.address?.addressLine1 || '',
@@ -97,7 +101,8 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
         postalCode: initialValues?.address?.postalCode || '',
       },
       bio: initialValues?.bio || '',
-      files: []
+      files: [],
+      profilePicture: initialValues?.profilePicture?.id || undefined,
     }
   });
 
@@ -146,20 +151,7 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
     }
   }, [calculatedAge, setValue]);
 
-  // Helper to extract clean filename
-  const getCleanFileName = (path: string) => {
-    if (!path) return '';
-    return path.split('/').pop() || '';
-  };
 
-  // Helper to format file size
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-  };
 
   // File Picker Handlers for Create Mode
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -217,6 +209,8 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
         formData.append('images', payload.images);
       }
 
+
+
       selectedFiles.forEach(file => {
         formData.append('files', file);
       });
@@ -244,6 +238,8 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6 text-left pb-10">
+
+
 
       {/* ── SECTION 1: PHOTOS UPLOAD ────────────────────────────────────────────── */}
       <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-4">
@@ -411,6 +407,7 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormInput
             label="Full Name"
+            required
             placeholder="Enter model's name"
             error={errors.basicDeatils?.fullName?.message}
             {...register('basicDeatils.fullName')}
@@ -418,6 +415,7 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
 
           <FormInput
             label="Email Address"
+            required
             placeholder="Enter model's email"
             error={errors.basicDeatils?.email?.message}
             {...register('basicDeatils.email')}
@@ -439,6 +437,7 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
               return (
                 <PhoneInputField
                   label="Primary Contact Number"
+                  required
                   value={fullPhone}
                   error={hasError}
                   helperText={helperText}
@@ -465,7 +464,7 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
                 : '';
               return (
                 <PhoneInputField
-                  label="Secondary Contact Number (Optional)"
+                  label="Secondary Contact Number"
                   value={fullPhone}
                   error={hasError}
                   helperText={helperText}
@@ -481,12 +480,23 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormInput
-            label="Date of Birth"
-            type="date"
-            error={errors.basicDeatils?.dob?.message}
-            {...register('basicDeatils.dob')}
-          />
+          <div className="w-full flex flex-col gap-1.5 justify-start">
+            <span className="text-[10px] md:text-xs font-bold text-slate-550 dark:text-slate-400 capitalize tracking-wider flex items-center gap-0.5">
+              Date of Birth <span className="text-red-500 font-bold">*</span>
+            </span>
+            <Controller
+              name="basicDeatils.dob"
+              control={control}
+              render={({ field }) => (
+                <DatePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="DD/MM/YYYY"
+                  error={errors.basicDeatils?.dob?.message}
+                />
+              )}
+            />
+          </div>
 
           <FormInput
             label="Age (Calculated from DOB)"
@@ -507,6 +517,7 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
             render={({ field }) => (
               <SearchDropdown
                 label="Gender"
+                required
                 value={field.value}
                 onChange={field.onChange}
                 options={[
@@ -515,6 +526,26 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
                   { value: 'Other', label: 'Other' }
                 ]}
                 error={errors.basicDeatils?.gender?.message}
+              />
+            )}
+          />
+
+          <Controller
+            name="basicDeatils.modelType"
+            control={control}
+            render={({ field }) => (
+              <SearchDropdown
+                label="Model Type"
+                required
+                value={field.value || ''}
+                onChange={field.onChange}
+                options={[
+                  { value: 'Fresher', label: 'Fresher' },
+                  { value: 'Experienced', label: 'Experienced' },
+                  { value: 'Professional', label: 'Professional' },
+                  { value: 'Influencer', label: 'Influencer' }
+                ]}
+                error={errors.basicDeatils?.modelType?.message}
               />
             )}
           />
@@ -534,26 +565,33 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
           <span className="text-[10px] text-slate-400 dark:text-slate-500">Talent appearance description and aesthetic attributes.</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormInput
-            label="Complexion (e.g. Fair, Dusky)"
-            placeholder="Complexion (optional)"
+            label="Complexion"
+            placeholder="e.g. Fair, Dusky"
             error={errors.physicalCharacteristics?.complexion?.message}
             {...register('physicalCharacteristics.complexion')}
           />
 
           <FormInput
-            label="Body Shape (e.g. Hourglass)"
-            placeholder="Body Shape (optional)"
+            label="Body Shape"
+            placeholder="e.g. Hourglass"
             error={errors.physicalCharacteristics?.bodyShape?.message}
             {...register('physicalCharacteristics.bodyShape')}
           />
 
           <FormInput
-            label="Eye Color (optional)"
+            label="Eye Color"
             placeholder="e.g. Brown"
             error={errors.physicalCharacteristics?.eyeColor?.message}
             {...register('physicalCharacteristics.eyeColor')}
+          />
+
+          <FormInput
+            label="Hair Color"
+            placeholder="e.g. Black"
+            error={errors.physicalCharacteristics?.hairColor?.message}
+            {...register('physicalCharacteristics.hairColor')}
           />
         </div>
       </div>
@@ -572,8 +610,8 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="w-full flex flex-col gap-1.5">
-            <span className="text-[10px] md:text-xs font-bold text-slate-500 tracking-wider">
-              Height
+            <span className="text-[10px] md:text-xs font-bold text-slate-500 tracking-wider flex items-center gap-0.5">
+              Height <span className="text-red-500 font-bold">*</span>
             </span>
             <input type="hidden" {...register('measurements.height')} />
             <div className="flex gap-4">
@@ -609,6 +647,7 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
 
           <FormInput
             label="Weight (kg)"
+            required
             placeholder="Weight (e.g. 60)"
             error={errors.measurements?.weight?.message}
             {...register('measurements.weight')}
@@ -622,38 +661,61 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
           />
 
           <FormInput
-            label="Chest (optional)"
+            label="Chest"
             placeholder="e.g. 38"
             error={errors.measurements?.chest?.message}
             {...register('measurements.chest')}
           />
 
           <FormInput
-            label="Bust (optional)"
+            label="Bust"
             placeholder="e.g. 34"
             error={errors.measurements?.bust?.message}
             {...register('measurements.bust')}
           />
 
           <FormInput
-            label="Waist (optional)"
+            label="Waist"
             placeholder="e.g. 28"
             error={errors.measurements?.waist?.message}
             {...register('measurements.waist')}
           />
 
           <FormInput
-            label="Hips (optional)"
+            label="Hips"
             placeholder="e.g. 36"
             error={errors.measurements?.hips?.message}
             {...register('measurements.hips')}
           />
 
           <FormInput
-            label="Shoe Size (optional)"
+            label="Shoe Size"
             placeholder="e.g. 8"
             error={errors.measurements?.shoe?.message}
             {...register('measurements.shoe')}
+          />
+
+          <Controller
+            name="measurements.size"
+            control={control}
+            render={({ field }) => (
+              <SearchDropdown
+                label="Size Chart"
+                required
+                value={field.value || ''}
+                onChange={field.onChange}
+                options={[
+                  { value: 'XS', label: 'XS' },
+                  { value: 'S', label: 'S' },
+                  { value: 'M', label: 'M' },
+                  { value: 'L', label: 'L' },
+                  { value: 'XL', label: 'XL' },
+                  { value: 'XXL', label: 'XXL' },
+                  { value: 'XXXL', label: 'XXXL' }
+                ]}
+                error={errors.measurements?.size?.message}
+              />
+            )}
           />
         </div>
       </div>
@@ -673,13 +735,14 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormInput
             label="Address Line 1"
+            required
             placeholder="Street address, company name, P.O. box"
             error={errors.address?.addressLine1?.message}
             {...register('address.addressLine1')}
           />
 
           <FormInput
-            label="Address Line 2 (Optional)"
+            label="Address Line 2"
             placeholder="Apartment, suite, unit, building, floor"
             error={errors.address?.addressLine2?.message}
             {...register('address.addressLine2')}
@@ -692,6 +755,7 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
             control={control}
             render={({ field }) => (
               <CountrySingleSelect
+                required
                 value={field.value}
                 onChange={(val) => {
                   field.onChange(val);
@@ -709,6 +773,7 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
             control={control}
             render={({ field }) => (
               <StateSingleSelect
+                required
                 countryId={selectedCountry}
                 value={field.value}
                 onChange={(val) => {
@@ -727,6 +792,7 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
             control={control}
             render={({ field }) => (
               <CitySingleSelect
+                required
                 stateId={selectedState}
                 value={field.value}
                 onChange={field.onChange}
@@ -741,6 +807,7 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormInput
             label="Postal / Zip Code"
+            required
             placeholder="e.g. 110001"
             error={errors.address?.postalCode?.message}
             {...register('address.postalCode')}
@@ -761,8 +828,8 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="bio" className="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-405  tracking-wider">
-            Professional Bio
+          <label htmlFor="bio" className="text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-405 tracking-wider flex items-center gap-0.5">
+            Professional Bio <span className="text-red-500 font-bold">*</span>
           </label>
           <textarea
             id="bio"

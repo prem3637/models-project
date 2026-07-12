@@ -4,15 +4,17 @@ interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   helperText?: string;
+  required?: boolean;
 }
 
 export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
-  ({ label, error, helperText, className = '', id, ...props }, ref) => {
+  ({ label, error, helperText, required, className = '', id, ...props }, ref) => {
     return (
       <div className={`w-full flex flex-col gap-1.5 ${className}`}>
         {label && (
-          <label htmlFor={id} className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">
+          <label htmlFor={id} className="text-[10px] md:text-xs font-bold text-slate-500 capitalize tracking-wider flex items-center gap-0.5">
             {label}
+            {required && <span className="text-red-500 font-bold">*</span>}
           </label>
         )}
         <input

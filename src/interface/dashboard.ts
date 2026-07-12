@@ -15,5 +15,7 @@ export interface DashboardStatsResponse {
             status: string;
             imageUrl: string;
         }>;
+        modelTypeBreakdown?: Record<string, number>;
+        bodyShapeBreakdown?: Record<string, number>;
     };
 }

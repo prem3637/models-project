@@ -6,6 +6,7 @@ import RegistrationTrend from './components/RegistrationTrend';
 import LocationDistribution from './components/LocationDistribution';
 import GenderDistribution from './components/GenderDistribution';
 import RecentModels from './components/RecentModels';
+import { ModelTypeBreakdown } from './components/TalentBreakdown';
 
 
 export const Dashboard: React.FC = () => {
@@ -48,6 +49,7 @@ export const Dashboard: React.FC = () => {
         <div className="flex flex-col gap-6">
           <GenderDistribution stats={stats} />
           <RecentModels stats={stats} />
+          <ModelTypeBreakdown stats={stats} />
         </div>
       </div>
     </div>

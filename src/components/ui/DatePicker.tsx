@@ -30,7 +30,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   disableFuture = true,
 }) => {
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
-  const [isYearView, setIsYearView] = useState(false);
+  const [viewMode, setViewMode] = useState<'calendar' | 'month' | 'year'>('calendar');
   const [localError, setLocalError] = useState('');
 
   // Convert YYYY-MM-DD database format to DD/MM/YYYY display format
@@ -81,20 +81,20 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
   // Scroll active year into view when entering year view
   useEffect(() => {
-    if (isYearView && yearListRef.current) {
+    if (viewMode === 'year' && yearListRef.current) {
       const activeEl = yearListRef.current.querySelector('[data-active="true"]');
       if (activeEl) {
         activeEl.scrollIntoView({ block: 'center' });
       }
     }
-  }, [isYearView]);
+  }, [viewMode]);
 
   const handleOpen = (event: React.MouseEvent<HTMLDivElement>) => {
     // Only open if click is not on clear button
     const target = event.target as HTMLElement;
     if (target.closest('.clear-btn')) return;
     setAnchorEl(event.currentTarget);
-    setIsYearView(false);
+    setViewMode('calendar');
   };
 
   const handleClose = () => {
@@ -136,7 +136,12 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
   const handleYearSelect = (year: number) => {
     setViewYear(year);
-    setIsYearView(false);
+    setViewMode('month');
+  };
+
+  const handleMonthSelect = (month: number) => {
+    setViewMonth(month);
+    setViewMode('calendar');
   };
 
   const getMaskedValue = (digits: string) => {
@@ -372,35 +377,70 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         }}
       >
         {/* MUI DatePicker Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'between', marginBottom: '16px' }}>
-          {/* Month/Year selector toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+          {/* Month/Year selector toggles */}
           <div
-            onClick={() => setIsYearView(!isYearView)}
             style={{
               display: 'flex',
               alignItems: 'center',
-              cursor: 'pointer',
+              gap: '4px',
               userSelect: 'none',
-              padding: '4px 8px',
-              borderRadius: '4px',
             }}
-            className="hover:bg-slate-100 dark:hover:bg-neutral-800"
           >
-            <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', color: isDark ? '#ffffff' : '#2e2e2e' }}>
-              {months[viewMonth]} {viewYear}
-            </Typography>
-            <ArrowDropDownIcon
-              sx={{
-                color: isDark ? '#94a3b8' : '#64748b',
-                transform: isYearView ? 'rotate(180deg)' : 'none',
-                transition: 'transform 0.2s',
-                ml: 0.5,
+            <div
+              onClick={() => setViewMode(viewMode === 'month' ? 'calendar' : 'month')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                cursor: 'pointer',
+                padding: '4px 6px',
+                borderRadius: '4px',
+                fontWeight: 650,
+                fontSize: '0.9rem',
+                color: isDark ? '#ffffff' : '#2e2e2e',
+                backgroundColor: viewMode === 'month' ? (isDark ? '#333333' : '#f1f5f9') : 'transparent',
               }}
-            />
+              className="hover:bg-slate-100 dark:hover:bg-neutral-800"
+            >
+              <span>{months[viewMonth]}</span>
+              <ArrowDropDownIcon
+                sx={{
+                  color: isDark ? '#94a3b8' : '#64748b',
+                  transform: viewMode === 'month' ? 'rotate(180deg)' : 'none',
+                  transition: 'transform 0.2s',
+                  ml: 0.25,
+                }}
+              />
+            </div>
+            <div
+              onClick={() => setViewMode(viewMode === 'year' ? 'calendar' : 'year')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                cursor: 'pointer',
+                padding: '4px 6px',
+                borderRadius: '4px',
+                fontWeight: 650,
+                fontSize: '0.9rem',
+                color: isDark ? '#ffffff' : '#2e2e2e',
+                backgroundColor: viewMode === 'year' ? (isDark ? '#333333' : '#f1f5f9') : 'transparent',
+              }}
+              className="hover:bg-slate-100 dark:hover:bg-neutral-800"
+            >
+              <span>{viewYear}</span>
+              <ArrowDropDownIcon
+                sx={{
+                  color: isDark ? '#94a3b8' : '#64748b',
+                  transform: viewMode === 'year' ? 'rotate(180deg)' : 'none',
+                  transition: 'transform 0.2s',
+                  ml: 0.25,
+                }}
+              />
+            </div>
           </div>
 
           {/* Previous/Next buttons (only shown in calendar grid view) */}
-          {!isYearView && (
+          {viewMode === 'calendar' && (
             <div style={{ display: 'flex', gap: '4px', marginLeft: 'auto' }}>
               <IconButton onClick={handlePrevMonth} size="small" sx={{ color: isDark ? '#ffffff' : '#5f6368' }}>
                 <ChevronLeftIcon />
@@ -412,7 +452,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           )}
         </div>
 
-        {isYearView ? (
+        {viewMode === 'year' && (
           /* Year Select List */
           <div
             ref={yearListRef}
@@ -449,7 +489,45 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               );
             })}
           </div>
-        ) : (
+        )}
+
+        {viewMode === 'month' && (
+          /* Month Select Grid */
+          <div
+            style={{
+              height: '240px',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '8px',
+              alignContent: 'center',
+            }}
+          >
+            {months.map((m, idx) => {
+              const isActive = idx === viewMonth;
+              return (
+                <div
+                  key={m}
+                  onClick={() => handleMonthSelect(idx)}
+                  style={{
+                    padding: '12px 8px',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    borderRadius: '8px',
+                    fontSize: '0.85rem',
+                    fontWeight: isActive ? 700 : 400,
+                    backgroundColor: isActive ? (isDark ? '#333333' : '#f1f5f9') : 'transparent',
+                    color: isActive ? accentColor : (isDark ? '#e0e0e0' : '#424242'),
+                  }}
+                  className="hover:bg-slate-100 dark:hover:bg-neutral-800 flex items-center justify-center"
+                >
+                  {m.substring(0, 3)}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {viewMode === 'calendar' && (
           /* Calendar Grid view */
           <div>
             {/* Days of Week Labels using CSS Grid directly to prevent layout collapses */}

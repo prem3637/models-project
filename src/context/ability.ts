@@ -77,8 +77,20 @@ export function buildAbilityFor(user?: any): AppAbility {
     const moduleName = match[1];
     const actionName = match[2];
     
-    // Grant the permission dynamically
+    // Grant the permission dynamically with case and singular/plural aliases
     can(actionName, moduleName);
+    can(actionName, moduleName.toLowerCase());
+
+    const lowerMod = moduleName.toLowerCase();
+    if (lowerMod.endsWith('s')) {
+      const singular = lowerMod.slice(0, -1);
+      can(actionName, singular);
+      can(actionName, singular.charAt(0).toUpperCase() + singular.slice(1));
+    } else {
+      const plural = lowerMod + 's';
+      can(actionName, plural);
+      can(actionName, plural.charAt(0).toUpperCase() + plural.slice(1));
+    }
   });
 
   // Special restrictions - prevent certain actions even with permissions

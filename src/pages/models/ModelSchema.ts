@@ -43,7 +43,7 @@ export const ModelFormSchema = z.object({
     age: z.number().optional(),
     dob: z.string().min(1, 'Date of birth is required'),
     gender: z.enum(['Male', 'Female', 'Other']),
-    modelType: z.string().min(1, 'Model type is required'),
+    modelType: z.array(z.string()).min(1, 'At least one model type is required'),
   }),
   physicalCharacteristics: z.object({
     complexion: z.string().optional(),

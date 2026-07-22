@@ -64,7 +64,14 @@ export const getModelColumns = ({ onOpenDetails, onOpenEdit, onDelete, ability }
   columnHelper.accessor(row => row.basicDeatils?.modelType, {
     id: 'modelType',
     header: 'Body Type',
-    cell: info => <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{info.getValue() || 'N/A'}</span>
+    cell: info => {
+      const val = info.getValue();
+      return (
+        <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">
+          {Array.isArray(val) ? val.join(', ') : (val || 'N/A')}
+        </span>
+      );
+    }
   }),
   columnHelper.accessor(row => row.address?.country, {
     id: 'country',

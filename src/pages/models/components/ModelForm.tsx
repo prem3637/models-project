@@ -2,15 +2,16 @@ import React, { useEffect, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import DatePicker from '../../../components/ui/DatePicker';
+import ImageCropper from '../../../components/ui/ImageCropper';
 import { ModelFormSchema, ModelFormData } from '../ModelSchema';
 import {
   useAddModelMutation,
-  useUpdateModelMutation,
-  useRemoveModelFileMutation
+  useUpdateModelMutation
 } from '../../../redux/services/models';
 import FormInput from '../../../components/ui/FormInput';
 import NumberInput from '../../../components/ui/NumberInput';
 import SearchDropdown from '../../../components/ui/SearchDropdown';
+import MultiSelectSearchDropdown from '../../../components/ui/MultiSelectSearchDropdown';
 import Button from '../../../components/ui/Button';
 import CountrySingleSelect from '../../../components/ui/CountrySingleSelect';
 import StateSingleSelect from '../../../components/ui/StateSingleSelect';
@@ -18,8 +19,7 @@ import CitySingleSelect from '../../../components/ui/CitySingleSelect';
 import PhoneInputField from '../../../components/ui/PhoneInputField';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../../utils/errorHelper';
-import { useConfirmDelete } from '../../../utils/useConfirmDelete';
-import { parsePhoneString, getCleanFileName, formatFileSize } from '../../../utils/helperfunction';
+import { parsePhoneString } from '../../../utils/helperfunction';
 
 interface ModelFormProps {
   modelId?: string;
@@ -30,31 +30,42 @@ interface ModelFormProps {
 export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, onSuccess }) => {
   const [addModel, { isLoading: isAdding }] = useAddModelMutation();
   const [updateModel, { isLoading: isUpdating }] = useUpdateModelMutation();
-  const [removeModelFile] = useRemoveModelFileMutation();
   const isEdit = !!modelId;
 
-  // Real files state for both Create & Edit modes
-  const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
-  const [previews, setPreviews] = React.useState<string[]>([]);
-  const [deletedImageIds, setDeletedImageIds] = React.useState<string[]>([]);
+  // Profile picture file states for Add Mode
+  const [profilePictureFile, setProfilePictureFile] = React.useState<File | null>(null);
+  const [profilePicturePreview, setProfilePicturePreview] = React.useState<string | null>(null);
+  const [cropperImgSrc, setCropperImgSrc] = React.useState<string | null>(null);
 
-  const { confirmDelete: confirmImageDelete } = useConfirmDelete<any>(async (item) => {
-    if (isEdit && modelId) {
-      try {
-        await removeModelFile({ id: modelId, fileId: item.id }).unwrap();
-        setDeletedImageIds(prev => [...prev, item.id]);
-      } catch (err) {
-        console.error("Failed to delete model file:", err);
-        throw err;
+  // Cleanup Object URLs on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (profilePicturePreview) {
+        URL.revokeObjectURL(profilePicturePreview);
       }
-    } else {
-      setDeletedImageIds(prev => [...prev, item.id]);
-    }
-  });
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+      if (cropperImgSrc && cropperImgSrc.startsWith('blob:')) {
+        URL.revokeObjectURL(cropperImgSrc);
+      }
+    };
+  }, [profilePicturePreview, cropperImgSrc]);
 
-  // Preview Image Lightbox Modal
-  const [previewImageUrl, setPreviewImageUrl] = React.useState<string | null>(null);
+  const handleCropDone = (croppedBlob: Blob) => {
+    if (cropperImgSrc && cropperImgSrc.startsWith('blob:')) {
+      URL.revokeObjectURL(cropperImgSrc);
+    }
+    setCropperImgSrc(null);
+
+    const croppedFile = new File([croppedBlob], 'profile-picture.jpg', { type: 'image/jpeg' });
+    setProfilePictureFile(croppedFile);
+    setProfilePicturePreview(URL.createObjectURL(croppedFile));
+  };
+
+  const handleCropCancel = () => {
+    if (cropperImgSrc && cropperImgSrc.startsWith('blob:')) {
+      URL.revokeObjectURL(cropperImgSrc);
+    }
+    setCropperImgSrc(null);
+  };
 
   const { register, handleSubmit, control, watch, setValue, formState: { errors } } = useForm<ModelFormData>({
     resolver: zodResolver(ModelFormSchema),
@@ -72,8 +83,12 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
         },
         age: initialValues?.basicDeatils?.age || undefined,
         dob: initialValues?.basicDeatils?.dob ? new Date(initialValues.basicDeatils.dob).toISOString().split('T')[0] : '',
-        gender: initialValues?.basicDeatils?.gender || 'Male',
-        modelType: initialValues?.basicDeatils?.modelType || 'Fresher',
+        gender: initialValues?.basicDeatils?.gender || '',
+        modelType: Array.isArray(initialValues?.basicDeatils?.modelType)
+          ? initialValues.basicDeatils.modelType
+          : (typeof initialValues?.basicDeatils?.modelType === 'string'
+            ? initialValues.basicDeatils.modelType.split(',').map((s: string) => s.trim()).filter(Boolean)
+            : ['Experienced']),
       },
       physicalCharacteristics: {
         complexion: initialValues?.physicalCharacteristics?.complexion || '',
@@ -153,31 +168,7 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
 
 
 
-  // File Picker Handlers for Create Mode
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const filesArray = Array.from(e.target.files);
-      const newFiles = [...selectedFiles, ...filesArray];
-      setSelectedFiles(newFiles);
-      setValue('files', newFiles, { shouldValidate: true });
 
-      const newPreviews = filesArray.map(file => URL.createObjectURL(file));
-      setPreviews(prev => [...prev, ...newPreviews]);
-    }
-  };
-
-  const handleRemoveFile = (index: number) => {
-    const newFiles = selectedFiles.filter((_, i) => i !== index);
-    setSelectedFiles(newFiles);
-    setValue('files', newFiles, { shouldValidate: true });
-
-    URL.revokeObjectURL(previews[index]);
-    setPreviews(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const handleLocalDeleteExisting = (fileId: string, fileName: string) => {
-    confirmImageDelete({ id: fileId }, fileName);
-  };
 
   const onSubmit = async (data: ModelFormData) => {
     const payload: any = {
@@ -188,13 +179,6 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
       bio: data.bio,
     };
 
-    if (isEdit && modelId) {
-      const remainingImageIds = initialValues?.images
-        ? initialValues.images.map((img: any) => img.id).filter((id: string) => !deletedImageIds.includes(id))
-        : [];
-      payload.images = JSON.stringify(remainingImageIds);
-    }
-
     try {
       const formData = new FormData();
 
@@ -204,22 +188,17 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
       formData.append('measurements', JSON.stringify(payload.measurements));
       formData.append('address', JSON.stringify(payload.address));
       formData.append('bio', payload.bio);
-
-      if (payload.images !== undefined) {
-        formData.append('images', payload.images);
+      if (profilePictureFile) {
+        formData.append('profilePicture', profilePictureFile);
       }
-
-
-
-      selectedFiles.forEach(file => {
-        formData.append('files', file);
-      });
 
       if (isEdit && modelId) {
         await updateModel({ id: modelId, body: formData }).unwrap();
+        toast.success('Model profile updated successfully!');
         onSuccess();
       } else {
         await addModel(formData).unwrap();
+        toast.success('Model profile created successfully!');
         onSuccess();
       }
     } catch (err: any) {
@@ -229,168 +208,114 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
   };
 
   const isPending = isAdding || isUpdating;
-  const hasPhotos = isEdit
-    ? ((initialValues?.images?.length || 0) - deletedImageIds.length > 0) || selectedFiles.length > 0
-    : selectedFiles.length > 0;
-  const totalPhotosCount = isEdit
-    ? (initialValues?.images?.length || 0) - deletedImageIds.length + selectedFiles.length
-    : selectedFiles.length;
+
+  const onInvalid = (errors: any) => {
+    console.error("Form validation errors:", errors);
+    toast.error("Please fill in all required fields correctly.");
+  };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6 text-left pb-10">
+    <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="flex flex-col gap-6 text-left pb-10">
 
 
 
-      {/* ── SECTION 1: PHOTOS UPLOAD ────────────────────────────────────────────── */}
-      <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-4">
-        <div className="flex flex-col gap-1 border-b border-slate-100 dark:border-navy-border pb-3">
-          <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100  tracking-wider flex items-center gap-2">
-            <svg className="w-4 h-4 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            Portfolio Gallery
-          </h3>
-          <span className="text-[10px] text-slate-405 dark:text-slate-500">Upload talent portfolio images. At least one image is required.</span>
-        </div>
-
-        {/* Drag & Drop Area */}
-        <div className="flex flex-col items-center">
-          <label className="w-full flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-navy-border hover:border-accent-500/60 dark:hover:border-accent-500/60 hover:bg-slate-50/40 dark:hover:bg-[#0c101d]/10 rounded-xl p-8 cursor-pointer transition-all duration-200">
-            <div className="flex flex-col items-center gap-2.5 text-center">
-              <div className="p-3 bg-slate-50 dark:bg-navy-950/40 text-slate-400 dark:text-slate-505 rounded-xl border dark:border-navy-border">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                </svg>
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Click to select or drag & drop portfolio images</span>
-                <span className="text-[10px] text-slate-400 dark:text-slate-500">PNG, JPG, or JPEG (Max 10MB per file)</span>
-              </div>
-            </div>
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              className="hidden"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              disabled={isPending}
-            />
-          </label>
-        </div>
-
-        {/* File Preview List View */}
-        {hasPhotos && (
-          <div className="flex flex-col gap-2 mt-2">
-            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-505  tracking-wider">
-              Uploaded Photos ({totalPhotosCount})
-            </span>
-            <div className="flex flex-col border border-slate-200/60 dark:border-navy-border rounded-xl divide-y divide-slate-100 dark:divide-navy-border/50 overflow-y-auto max-h-[350px] bg-slate-50/25 dark:bg-navy-950/10">
-
-              {/* EDIT MODE: Display Saved Cloud Photos (excluding deleted ones) */}
-              {isEdit && initialValues?.images && initialValues.images.filter((img: any) => !deletedImageIds.includes(img.id)).map((img: any) => {
-                const cleanName = getCleanFileName(img.path);
-                return (
-                  <div key={img.id} className="flex items-center justify-between p-3.5 hover:bg-white dark:hover:bg-navy-card/30 transition-colors">
-                    <div className="flex items-center gap-3.5 min-w-0">
-                      <img
-                        src={img.url}
-                        alt="Portfolio"
-                        className="w-11 h-11 object-cover rounded-xl border border-slate-200 dark:border-navy-border cursor-zoom-in hover:opacity-90 transition-all shadow-sm shrink-0"
-                        onClick={() => setPreviewImageUrl(img.url)}
-                      />
-                      <div className="flex flex-col text-left min-w-0">
-                        <span
-                          onClick={() => setPreviewImageUrl(img.url)}
-                          className="text-xs font-bold text-slate-800 dark:text-slate-200 hover:text-accent-500 dark:hover:text-accent-400 cursor-zoom-in transition-colors truncate"
-                        >
-                          {cleanName}
-                        </span>
-                        <span className="text-[9px] text-slate-405 dark:text-slate-505 font-bold  tracking-wider">
-                          {img.size ? formatFileSize(img.size) : 'Cloud Asset'}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setPreviewImageUrl(img.url)}
-                        className="text-[10px] font-extrabold text-accent-500 hover:text-accent-600 transition-colors px-2.5 py-1.5 rounded-lg hover:bg-accent-50 dark:hover:bg-accent-950/20  tracking-wider"
-                      >
-                        View
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleLocalDeleteExisting(img.id, cleanName)}
-                        disabled={isPending}
-                        className="text-slate-400 hover:text-red-500 dark:hover:text-red-400 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* Display Selected Local Photos */}
-              {previews.map((previewUrl, idx) => {
-                const file = selectedFiles[idx];
-                return (
-                  <div key={idx} className="flex items-center justify-between p-3.5 hover:bg-white dark:hover:bg-navy-card/30 transition-colors">
-                    <div className="flex items-center gap-3.5 min-w-0">
-                      <img
-                        src={previewUrl}
-                        alt="Preview"
-                        className="w-11 h-11 object-cover rounded-xl border border-slate-200 dark:border-navy-border cursor-zoom-in hover:opacity-90 transition-all shadow-sm shrink-0"
-                        onClick={() => setPreviewImageUrl(previewUrl)}
-                      />
-                      <div className="flex flex-col text-left min-w-0">
-                        <span
-                          onClick={() => setPreviewImageUrl(previewUrl)}
-                          className="text-xs font-bold text-slate-800 dark:text-slate-200 hover:text-accent-500 dark:hover:text-accent-400 cursor-zoom-in transition-colors truncate"
-                        >
-                          {file ? file.name : `image-${idx + 1}`}
-                        </span>
-                        <span className="text-[9px] text-slate-400 dark:text-slate-505 font-bold  tracking-wider">
-                          {file?.size ? formatFileSize(file.size) : 'Local Asset'}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setPreviewImageUrl(previewUrl)}
-                        className="text-[10px] font-extrabold text-accent-500 hover:text-accent-600 transition-colors px-2.5 py-1.5 rounded-lg hover:bg-accent-50 dark:hover:bg-accent-950/20  tracking-wider"
-                      >
-                        View
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveFile(idx)}
-                        className="text-slate-400 hover:text-red-500 dark:hover:text-red-400 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-
-            </div>
+      {/* ── SECTION 1: PROFILE PICTURE UPLOAD (Add Mode Only) ────────────────────── */}
+      {!isEdit && (
+        <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-4">
+          <div className="flex flex-col gap-1 border-b border-slate-100 dark:border-navy-border pb-3">
+            <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 tracking-wider flex items-center gap-2">
+              <svg className="w-4 h-4 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Profile Picture
+            </h3>
+            <span className="text-[10px] text-slate-404 dark:text-slate-500">Upload model profile photo (PNG, JPG, max 30MB).</span>
           </div>
-        )}
 
-        {/* Validation message */}
-        {!isEdit && selectedFiles.length === 0 && (
-          <span className="text-xs text-red-500 font-medium mt-1">Please select or upload at least one image.</span>
-        )}
-      </div>
+          <div className="flex flex-col gap-4">
+            {profilePicturePreview ? (
+              <div className="flex flex-col items-center gap-3">
+                <div className="relative w-40 h-40 rounded-full overflow-hidden border-2 border-slate-200 dark:border-navy-border shadow-md bg-slate-50 dark:bg-navy-950">
+                  <img
+                    src={profilePicturePreview}
+                    alt="Profile Preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProfilePictureFile(null);
+                      if (profilePicturePreview) {
+                        URL.revokeObjectURL(profilePicturePreview);
+                      }
+                      setProfilePicturePreview(null);
+                    }}
+                    className="absolute inset-0 bg-black/40 hover:bg-black/60 opacity-0 hover:opacity-100 flex items-center justify-center text-white transition-opacity duration-200"
+                    title="Remove Photo"
+                  >
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfilePictureFile(null);
+                    if (profilePicturePreview) {
+                      URL.revokeObjectURL(profilePicturePreview);
+                    }
+                    setProfilePicturePreview(null);
+                  }}
+                  className="px-3 py-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950/30 text-red-600 dark:text-red-400 rounded-lg text-xs font-bold transition-all border border-red-200/50 dark:border-red-800/30"
+                >
+                  Remove Picture
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center">
+                <label className="w-full flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-navy-border hover:border-accent-500/60 dark:hover:border-accent-500/60 hover:bg-slate-50/40 dark:hover:bg-[#0c101d]/10 rounded-xl p-8 cursor-pointer transition-all duration-200">
+                  <div className="flex flex-col items-center gap-2.5 text-center">
+                    <div className="p-3 bg-slate-50 dark:bg-navy-950/40 text-slate-400 dark:text-slate-500 rounded-xl border dark:border-navy-border">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                      </svg>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Click to select or drag & drop profile picture</span>
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500">PNG, JPG, or JPEG (Max 30MB)</span>
+                    </div>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        const file = e.target.files[0];
+                        if (file.size > 30 * 1024 * 1024) {
+                          toast.error('File size exceeds 30MB limit.');
+                          return;
+                        }
+                        const url = URL.createObjectURL(file);
+                        setCropperImgSrc(url);
+                        e.target.value = '';
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+            )}
+          </div>
+          {cropperImgSrc && (
+            <ImageCropper
+              imageSrc={cropperImgSrc}
+              onCropDone={handleCropDone}
+              onCancel={handleCropCancel}
+            />
+          )}
+        </div>
+      )}
 
       {/* ── SECTION 2: BASIC INFORMATION ────────────────────────────────────────── */}
       <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-4">
@@ -534,13 +459,12 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
             name="basicDeatils.modelType"
             control={control}
             render={({ field }) => (
-              <SearchDropdown
+              <MultiSelectSearchDropdown
                 label="Model Type"
                 required
-                value={field.value || ''}
+                value={field.value || []}
                 onChange={field.onChange}
                 options={[
-                  { value: 'Fresher', label: 'Fresher' },
                   { value: 'Experienced', label: 'Experienced' },
                   { value: 'Professional', label: 'Professional' },
                   { value: 'Influencer', label: 'Influencer' }
@@ -855,38 +779,11 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
           size="lg"
           className="px-10 py-3.5 text-xs font-extrabold shadow-md hover:shadow-lg hover:bg-accent-700 hover:scale-[1.01] active:scale-[0.98] transition-all duration-150 rounded-xl"
           isLoading={isPending}
-          disabled={!isEdit && selectedFiles.length === 0}
+          disabled={!isEdit && !profilePictureFile}
         >
           {isEdit ? 'Save Changes' : 'Add Model'}
         </Button>
       </div>
-
-      {/* Lightbox Modal for Image Preview */}
-      {previewImageUrl && (
-        <div className="fixed inset-0 z-[300] bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="absolute inset-0" onClick={() => setPreviewImageUrl(null)} />
-          <div className="relative max-w-4xl max-h-[85vh] bg-white dark:bg-navy-card rounded-2xl overflow-hidden shadow-2xl z-10 flex flex-col border dark:border-navy-border">
-            <div className="absolute top-3 right-3 z-20">
-              <button
-                type="button"
-                onClick={() => setPreviewImageUrl(null)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-navy-950 dark:hover:bg-navy-900 border dark:border-navy-border text-slate-505 dark:text-slate-400 flex items-center justify-center transition-colors shadow-sm focus:outline-none"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="p-2 flex-1 flex items-center justify-center bg-slate-50 dark:bg-navy-950">
-              <img
-                src={previewImageUrl}
-                alt="Portfolio Preview"
-                className="max-h-[70vh] max-w-full rounded-lg object-contain"
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </form>
   );
 };

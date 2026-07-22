@@ -172,3 +172,73 @@ export const getCleanFileName = (path: string | undefined | null): string => {
   return filename.replace(/^\d+-\d+-/, '').replace(/^\d+-/, '') || 'Portfolio Asset';
 };
 
+export const downloadFile = async (url: string, filename: string): Promise<void> => {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+  } catch (err) {
+    console.error('Failed to download file', err);
+    window.open(url, '_blank');
+  }
+};
+
+export const createClientThumbnailUrl = (file: File, maxDim = 200): Promise<string> => {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith('image/')) {
+      resolve(URL.createObjectURL(file));
+      return;
+    }
+    const tempUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(tempUrl);
+      let width = img.width;
+      let height = img.height;
+      if (width > height) {
+        if (width > maxDim) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        }
+      } else {
+        if (height > maxDim) {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve(URL.createObjectURL(blob));
+            } else {
+              resolve(URL.createObjectURL(file));
+            }
+          },
+          'image/jpeg',
+          0.7
+        );
+      } else {
+        resolve(URL.createObjectURL(file));
+      }
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(tempUrl);
+      resolve(URL.createObjectURL(file));
+    };
+    img.src = tempUrl;
+  });
+};
+

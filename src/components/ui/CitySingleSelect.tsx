@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import SearchDropdown from "./SearchDropdown";
 import { useInfiniteSelectSingle } from "../../utils/useInfiniteSelectSingle";
 import { useAppSelector } from "../../redux/hooks";
@@ -79,10 +79,15 @@ export const CitySingleSelect: React.FC<CitySingleSelectProps> = ({
     }
   }, [value, currentItem]);
 
+  const prevStateIdRef = useRef(stateId);
+
   // Reset local items list whenever selected stateId changes
   useEffect(() => {
-    resetState();
-    setSelectedName(""); // Clear selected name on state change
+    if (prevStateIdRef.current !== stateId) {
+      resetState();
+      setSelectedName(""); // Clear selected name on state change
+      prevStateIdRef.current = stateId;
+    }
   }, [stateId, resetState]);
 
   return (

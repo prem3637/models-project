@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { formatDate, getCleanFileName, formatFileSize, formatMeasurement } from '../../utils/helperfunction';
+import { formatDate, getCleanFileName, formatFileSize, formatMeasurement, downloadFile } from '../../utils/helperfunction';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useGetModelDetailsQuery, useDeleteModelMutation } from '../../redux/services/models';
 import { useAppAbility } from '../../context/AbilityContext';
@@ -8,7 +8,6 @@ import Skeleton from '../../components/ui/Skeleton';
 import { useConfirmDelete } from '../../utils/useConfirmDelete';
 import ShareModelModal from './components/ShareModelModal';
 import { ProfilePictureUploader } from './components/ProfilePictureUploader';
-
 
 export const ModelDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -31,7 +30,12 @@ export const ModelDetails: React.FC = () => {
 
   // Lightbox State
   const [activeImageIndex, setActiveImageIndex] = useState<number | null>(null);
+  const [previewImageLoaded, setPreviewImageLoaded] = useState(false);
   const [isBioExpanded, setIsBioExpanded] = useState(false);
+
+  useEffect(() => {
+    setPreviewImageLoaded(false);
+  }, [activeImageIndex]);
 
   // Keyboard navigation for Lightbox
   useEffect(() => {
@@ -51,16 +55,82 @@ export const ModelDetails: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-6 w-full">
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-4 w-24" />
+      <div className="flex flex-col gap-6 w-full animate-pulse">
+        {/* Header and Actions Skeleton */}
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-4 w-28" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-8 w-24 rounded-lg" />
+            <Skeleton className="h-8 w-24 rounded-lg" />
+          </div>
         </div>
-        <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex flex-col md:flex-row items-center gap-6 w-full md:w-auto">
-            <Skeleton className="w-24 h-24 rounded-full shrink-0" />
-            <div className="flex flex-col items-center md:items-start gap-2.5 w-full md:w-48">
-              <Skeleton className="h-6 w-40" />
-              <Skeleton className="h-4 w-28" />
+
+        {/* Main Grid Content Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          <div className="lg:col-span-2 flex flex-col gap-6">
+            
+            {/* Main Info Card Skeleton */}
+            <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center gap-6">
+              <Skeleton className="w-24 h-24 rounded-full shrink-0" />
+              <div className="flex-1 flex flex-col gap-3 w-full">
+                <Skeleton className="h-7 w-48" />
+                <div className="flex flex-wrap gap-2">
+                  <Skeleton className="h-5 w-36 rounded-lg" />
+                  <Skeleton className="h-5 w-28 rounded-lg" />
+                  <Skeleton className="h-5 w-32 rounded-lg" />
+                </div>
+                <Skeleton className="h-4 w-full mt-1" />
+                <Skeleton className="h-4 w-2/3" />
+                
+                {/* Age, Gender, Category stat row */}
+                <div className="grid grid-cols-3 gap-3 mt-2">
+                  <div className="h-14 bg-slate-100 dark:bg-navy-950 border dark:border-navy-border/40 rounded-2xl" />
+                  <div className="h-14 bg-slate-100 dark:bg-navy-950 border dark:border-navy-border/40 rounded-2xl" />
+                  <div className="h-14 bg-slate-100 dark:bg-navy-950 border dark:border-navy-border/40 rounded-2xl" />
+                </div>
+              </div>
+            </div>
+
+            {/* Physical Attributes Skeleton */}
+            <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-4">
+              <Skeleton className="h-5 w-40" />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="flex flex-col gap-1.5">
+                    <Skeleton className="h-3 w-16" />
+                    <Skeleton className="h-5 w-24" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Measurements Skeleton */}
+            <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-4">
+              <Skeleton className="h-5 w-40" />
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3.5 mt-2">
+                {[...Array(9)].map((_, i) => (
+                  <div key={i} className="h-14 bg-slate-100 dark:bg-navy-950 border dark:border-navy-border/40 rounded-2xl" />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column Skeleton */}
+          <div className="flex flex-col gap-6">
+            {/* Gallery Skeleton */}
+            <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-4">
+              <Skeleton className="h-5 w-44" />
+              <div className="grid grid-cols-3 gap-2.5 mt-2">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="aspect-square bg-slate-100 dark:bg-navy-950 border dark:border-navy-border/40 rounded-xl" />
+                ))}
+              </div>
+            </div>
+
+            {/* Presentation Video Skeleton */}
+            <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-4">
+              <Skeleton className="h-5 w-44" />
+              <div className="aspect-video bg-slate-100 dark:bg-navy-950 border dark:border-navy-border/40 rounded-xl mt-2" />
             </div>
           </div>
         </div>
@@ -290,6 +360,8 @@ export const ModelDetails: React.FC = () => {
               <div className="aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-navy-border shadow-lg group relative">
                 <video
                   src={model.introVideo.url}
+                  poster={model.introVideo.thumbnailUrl || ''}
+                  preload="none"
                   controls
                   className="w-full h-full object-contain"
                 />
@@ -297,12 +369,14 @@ export const ModelDetails: React.FC = () => {
             </div>
           )}
 
+
+
           {/* Portfolio Images Gallery */}
           <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border rounded-2xl p-6 shadow-sm flex flex-col gap-5 transition-colors duration-200">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-navy-border pb-4">
               <div className="flex flex-col gap-0.5">
                 <h3 className="text-sm font-extrabold text-slate-900 dark:text-white tracking-wider">Model Portfolio</h3>
-                <span className="text-[10px] text-slate-400 dark:text-slate-500">Studio books and snapshots ({model.images?.length || 0} images)</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-505">Studio books and snapshots ({model.images?.length || 0} images)</span>
               </div>
 
               <div className="flex items-center gap-1 bg-slate-100 dark:bg-navy-950 p-1 rounded-lg border border-slate-200 dark:border-navy-border">
@@ -346,29 +420,38 @@ export const ModelDetails: React.FC = () => {
             {model.images && model.images.length > 0 ? (
               viewMode === 'grid' ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  {model.images.map((img, index) => (
-                    <div
-                      key={index}
-                      onClick={() => setActiveImageIndex(index)}
-                      className="group relative aspect-[3/4] rounded-xl overflow-hidden border border-slate-200 dark:border-navy-border bg-slate-100 dark:bg-navy-950 cursor-pointer shadow-sm hover:border-accent-400 dark:hover:border-accent-500 hover:shadow-md transition-all duration-200"
-                    >
-                      <img
-                        src={img.url}
-                        alt={`${model.basicDeatils?.fullName} Portfolio ${index + 1}`}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <span className="px-3 py-1.5 bg-white/95 dark:bg-navy-card/95 backdrop-blur-sm rounded-lg text-xs font-bold text-slate-800 dark:text-slate-200 border dark:border-navy-border shadow-lg">
-                          Preview
-                        </span>
+                  {model.images.map((img, index) => {
+                    const cleanName = img.originalName || getCleanFileName(img.path || img.url);
+                    const formattedSize = formatFileSize(img.size);
+                    return (
+                      <div
+                        key={index}
+                        onClick={() => setActiveImageIndex(index)}
+                        className="group relative aspect-[3/4] rounded-xl overflow-hidden border border-slate-200 dark:border-navy-border bg-slate-50 dark:bg-[#0c101d] flex items-center justify-center cursor-pointer shadow-sm hover:border-accent-400 dark:hover:border-accent-500 hover:shadow-md transition-all duration-200"
+                      >
+                        <img
+                          src={img.thumbnailUrl || img.url}
+                          alt={`${model.basicDeatils?.fullName} Portfolio ${index + 1}`}
+                          loading="lazy"
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 pt-8 flex flex-col gap-0.5">
+                          <span className="text-[11px] font-bold text-white truncate">{cleanName}</span>
+                          <span className="text-[9px] text-slate-300 font-bold tracking-wider">{formattedSize}</span>
+                        </div>
+                        <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <span className="px-3 py-1.5 bg-white/95 dark:bg-navy-card/95 backdrop-blur-sm rounded-lg text-xs font-bold text-slate-800 dark:text-slate-200 border dark:border-navy-border shadow-lg">
+                            Preview Image
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">
                   {model.images.map((img, index) => {
-                    const cleanName = getCleanFileName(img.path || img.url);
+                    const cleanName = img.originalName || getCleanFileName(img.path || img.url);
                     const formattedSize = formatFileSize(img.size);
                     return (
                       <div
@@ -376,13 +459,12 @@ export const ModelDetails: React.FC = () => {
                         className="flex items-center justify-between p-3 bg-slate-50 dark:bg-[#0f1422] border border-slate-205 dark:border-navy-border rounded-xl transition-all duration-200 hover:shadow-sm"
                       >
                         <div className="flex items-center gap-3.5 min-w-0">
-                          <div className="w-10 h-14 rounded-lg overflow-hidden border border-slate-200 dark:border-navy-border bg-slate-100 dark:bg-navy-950 shrink-0 shadow-sm">
-                            <img
-                              src={img.url}
-                              alt={cleanName}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
+                          <img
+                            src={img.thumbnailUrl || img.url}
+                            alt={cleanName}
+                            className="w-10 h-14 object-cover rounded-lg border border-slate-200 dark:border-navy-border shrink-0 shadow-sm cursor-pointer hover:opacity-90 transition-all"
+                            onClick={() => setActiveImageIndex(index)}
+                          />
                           <div className="flex flex-col min-w-0 gap-0.5">
                             <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{cleanName}</span>
                             <span className="text-[10px] text-slate-405 dark:text-slate-500 font-medium">
@@ -391,17 +473,29 @@ export const ModelDetails: React.FC = () => {
                           </div>
                         </div>
 
-                        <button
-                          type="button"
-                          onClick={() => setActiveImageIndex(index)}
-                          className="px-3 py-1.5 bg-white dark:bg-navy-card hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-navy-border rounded-lg text-[10px] font-bold tracking-wide transition-all shadow-sm cursor-pointer flex items-center gap-1.5 focus:outline-none"
-                        >
-                          <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                          Preview
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setActiveImageIndex(index)}
+                            className="px-3 py-1.5 bg-white dark:bg-navy-card hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-navy-border rounded-lg text-[10px] font-bold tracking-wide transition-all shadow-sm cursor-pointer flex items-center gap-1.5 focus:outline-none"
+                          >
+                            <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            Preview
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => downloadFile(img.url, cleanName)}
+                            className="px-3 py-1.5 bg-white dark:bg-navy-card hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-navy-border rounded-lg text-[10px] font-bold tracking-wide transition-all shadow-sm cursor-pointer flex items-center gap-1.5 focus:outline-none"
+                          >
+                            <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                            </svg>
+                            Download
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
@@ -423,101 +517,93 @@ export const ModelDetails: React.FC = () => {
 
             <div className="flex flex-col gap-4 text-xs text-slate-700 dark:text-slate-300">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-navy-950 flex items-center justify-center border border-slate-200 dark:border-navy-border shrink-0">
-                  <svg className="w-4 h-4 text-slate-405" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="p-2 rounded-xl bg-slate-100 dark:bg-navy-950 text-slate-500 dark:text-slate-400 shrink-0 border dark:border-navy-border">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500  font-bold tracking-wider">Email Address</span>
-                  <span className="font-bold text-slate-900 dark:text-white truncate mt-0.5">
-                    {model.basicDeatils?.email}
-                  </span>
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Email Address</span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-100 truncate mt-0.5">{model.basicDeatils?.email}</span>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-navy-950 flex items-center justify-center border border-slate-200 dark:border-navy-border shrink-0">
-                  <svg className="w-4 h-4 text-slate-405" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="p-2 rounded-xl bg-slate-100 dark:bg-navy-950 text-slate-500 dark:text-slate-400 shrink-0 border dark:border-navy-border">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500  font-bold tracking-wider">Phone Number</span>
-                  <span className="font-bold text-slate-900 dark:text-white mt-0.5">{formattedPrimaryContact}</span>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Phone Number</span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-100 mt-0.5">{formattedPrimaryContact}</span>
+                  {formattedSecondaryContact && (
+                    <span className="text-[11px] text-slate-405 dark:text-slate-500 mt-0.5">Alt: {formattedSecondaryContact}</span>
+                  )}
                 </div>
               </div>
 
-              {formattedSecondaryContact && (
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-navy-950 flex items-center justify-center border border-slate-200 dark:border-navy-border shrink-0">
-                    <svg className="w-4 h-4 text-slate-405" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500  font-bold tracking-wider">Alternative Phone</span>
-                    <span className="font-bold text-slate-900 dark:text-white mt-0.5">{formattedSecondaryContact}</span>
-                  </div>
-                </div>
-              )}
-
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-navy-950 flex items-center justify-center border border-slate-200 dark:border-navy-border shrink-0">
-                  <svg className="w-4 h-4 text-slate-405" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="p-2 rounded-xl bg-slate-100 dark:bg-navy-950 text-slate-500 dark:text-slate-400 shrink-0 border dark:border-navy-border">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500  font-bold tracking-wider">Gender Identity</span>
-                  <span className="font-bold text-slate-900 dark:text-white mt-0.5">{model.basicDeatils?.gender}</span>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Gender Identity</span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-100 mt-0.5">{model.basicDeatils?.gender || 'N/A'}</span>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-navy-950 flex items-center justify-center border border-slate-200 dark:border-navy-border shrink-0">
-                  <svg className="w-4 h-4 text-slate-405" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="p-2 rounded-xl bg-slate-100 dark:bg-navy-950 text-slate-500 dark:text-slate-400 shrink-0 border dark:border-navy-border">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500  font-bold tracking-wider">Base Location</span>
-                  <span className="font-bold text-slate-900 dark:text-white mt-0.5">
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Base Location</span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-100 mt-0.5">
                     {[model.address?.city?.name, model.address?.state?.name, model.address?.country?.name].filter(Boolean).join(', ') || 'N/A'}
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-navy-950 flex items-center justify-center border border-slate-200 dark:border-navy-border shrink-0">
-                  <svg className="w-4 h-4 text-slate-405" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
+              {model.address?.addressLine1 && (
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-xl bg-slate-100 dark:bg-navy-950 text-slate-500 dark:text-slate-400 shrink-0 border dark:border-navy-border">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Street Address</span>
+                    <span className="font-semibold text-slate-900 dark:text-slate-100 mt-0.5">
+                      {model.address.addressLine1}
+                      {model.address.addressLine2 ? `, ${model.address.addressLine2}` : ''}
+                      {model.address.postalCode ? ` (${model.address.postalCode})` : ''}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500  font-bold tracking-wider">Street Address</span>
-                  <span className="font-bold text-slate-900 dark:text-white mt-0.5">
-                    {model.address?.addressLine1 ? `${model.address.addressLine1}${model.address.addressLine2 ? ', ' + model.address.addressLine2 : ''}` : 'N/A'}
-                    {model.address?.postalCode ? ` (${model.address.postalCode})` : ''}
-                  </span>
-                </div>
-              </div>
+              )}
 
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-navy-950 flex items-center justify-center border border-slate-200 dark:border-navy-border shrink-0">
-                  <svg className="w-4 h-4 text-slate-405" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+              {model.createdAt && (
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-xl bg-slate-100 dark:bg-navy-950 text-slate-500 dark:text-slate-400 shrink-0 border dark:border-navy-border">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" strokeWidth={2} />
+                      <line x1="16" y1="2" x2="16" y2="6" strokeWidth={2} />
+                      <line x1="8" y1="2" x2="8" y2="6" strokeWidth={2} />
+                      <line x1="3" y1="10" x2="21" y2="10" strokeWidth={2} />
+                    </svg>
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Registration Date</span>
+                    <span className="font-semibold text-slate-900 dark:text-slate-100 mt-0.5">{formatDate(model.createdAt)}</span>
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-505  font-bold tracking-wider">Registration Date</span>
-                  <span className="font-bold text-slate-900 dark:text-white mt-0.5">
-                    {formatDate(model.createdAt, { year: 'numeric', month: 'long', day: 'numeric' }) || 'N/A'}
-                  </span>
-                </div>
-              </div>
+              )}
             </div>
           </div>
 
@@ -529,75 +615,79 @@ export const ModelDetails: React.FC = () => {
 
             <div className="flex flex-col gap-3 text-xs text-slate-700 dark:text-slate-300">
               {model.physicalCharacteristics?.complexion && (
-                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all">
-                  <span className="text-slate-400 font-bold text-[10px]  tracking-wider">Complexion</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{model.physicalCharacteristics.complexion}</span>
+                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all gap-4">
+                  <span className="text-slate-400 font-bold text-[10px] tracking-wider uppercase shrink-0">Complexion</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 text-right text-xs max-w-[65%] break-words">{model.physicalCharacteristics.complexion}</span>
                 </div>
               )}
               {model.physicalCharacteristics?.bodyShape && (
-                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all">
-                  <span className="text-slate-400 font-bold text-[10px]  tracking-wider">Body Shape</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{model.physicalCharacteristics.bodyShape}</span>
+                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all gap-4">
+                  <span className="text-slate-400 font-bold text-[10px] tracking-wider uppercase shrink-0">Body Shape</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 text-right text-xs max-w-[65%] break-words">{model.physicalCharacteristics.bodyShape}</span>
                 </div>
               )}
               {model.physicalCharacteristics?.hairColor && (
-                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all">
-                  <span className="text-slate-400 font-bold text-[10px]  tracking-wider">Hair Color</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{model.physicalCharacteristics.hairColor}</span>
+                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all gap-4">
+                  <span className="text-slate-400 font-bold text-[10px] tracking-wider uppercase shrink-0">Hair Color</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 text-right text-xs max-w-[65%] break-words">{model.physicalCharacteristics.hairColor}</span>
                 </div>
               )}
               {model.basicDeatils?.modelType && (
-                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all">
-                  <span className="text-slate-400 font-bold text-[10px]  tracking-wider">Model Type</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{model.basicDeatils.modelType}</span>
+                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all gap-4">
+                  <span className="text-slate-400 font-bold text-[10px] tracking-wider uppercase shrink-0">Model Type</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 text-right text-xs max-w-[65%] break-words">
+                    {Array.isArray(model.basicDeatils.modelType)
+                      ? model.basicDeatils.modelType.join(', ')
+                      : model.basicDeatils.modelType}
+                  </span>
                 </div>
               )}
               {model.measurements?.size && (
-                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all">
-                  <span className="text-slate-400 font-bold text-[10px]  tracking-wider">Size Chart</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{model.measurements.size}</span>
+                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all gap-4">
+                  <span className="text-slate-400 font-bold text-[10px] tracking-wider uppercase shrink-0">Size Chart</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 text-right text-xs max-w-[65%] break-words">{model.measurements.size}</span>
                 </div>
               )}
               {model.measurements?.shoulder && (
-                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all">
-                  <span className="text-slate-400 font-bold text-[10px]  tracking-wider">Shoulder</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{formatMeasurement(model.measurements.shoulder, 'cm')}</span>
+                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all gap-4">
+                  <span className="text-slate-400 font-bold text-[10px] tracking-wider uppercase shrink-0">Shoulder</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 text-right text-xs max-w-[65%] break-words">{formatMeasurement(model.measurements.shoulder, 'cm')}</span>
                 </div>
               )}
               {model.measurements?.chest && (
-                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all">
-                  <span className="text-slate-400 font-bold text-[10px]  tracking-wider">Chest</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{formatMeasurement(model.measurements.chest, 'in')}</span>
+                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all gap-4">
+                  <span className="text-slate-400 font-bold text-[10px] tracking-wider uppercase shrink-0">Chest</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 text-right text-xs max-w-[65%] break-words">{formatMeasurement(model.measurements.chest, 'in')}</span>
                 </div>
               )}
               {model.measurements?.bust && (
-                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all">
-                  <span className="text-slate-400 font-bold text-[10px]  tracking-wider">Bust</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{formatMeasurement(model.measurements.bust, 'in')}</span>
+                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all gap-4">
+                  <span className="text-slate-400 font-bold text-[10px] tracking-wider uppercase shrink-0">Bust</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 text-right text-xs max-w-[65%] break-words">{formatMeasurement(model.measurements.bust, 'in')}</span>
                 </div>
               )}
               {model.measurements?.waist && (
-                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all">
-                  <span className="text-slate-400 font-bold text-[10px]  tracking-wider">Waist</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{formatMeasurement(model.measurements.waist, 'in')}</span>
+                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all gap-4">
+                  <span className="text-slate-400 font-bold text-[10px] tracking-wider uppercase shrink-0">Waist</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 text-right text-xs max-w-[65%] break-words">{formatMeasurement(model.measurements.waist, 'in')}</span>
                 </div>
               )}
               {model.measurements?.hips && (
-                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all">
-                  <span className="text-slate-400 font-bold text-[10px]  tracking-wider">Hips</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{formatMeasurement(model.measurements.hips, 'in')}</span>
+                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all gap-4">
+                  <span className="text-slate-400 font-bold text-[10px] tracking-wider uppercase shrink-0">Hips</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 text-right text-xs max-w-[65%] break-words">{formatMeasurement(model.measurements.hips, 'in')}</span>
                 </div>
               )}
               {model.measurements?.shoe && (
-                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all">
-                  <span className="text-slate-400 font-bold text-[10px]  tracking-wider">Shoe Size</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{model.measurements.shoe}</span>
+                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all gap-4">
+                  <span className="text-slate-400 font-bold text-[10px] tracking-wider uppercase shrink-0">Shoe Size</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 text-right text-xs max-w-[65%] break-words">{model.measurements.shoe}</span>
                 </div>
               )}
               {model.physicalCharacteristics?.eyeColor && (
-                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all">
-                  <span className="text-slate-400 font-bold text-[10px]  tracking-wider">Eye Color</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{model.physicalCharacteristics.eyeColor}</span>
+                <div className="flex justify-between items-center py-2 px-3 bg-slate-50/50 dark:bg-[#0f1422]/50 border border-slate-100 dark:border-navy-border/30 rounded-xl transition-all gap-4">
+                  <span className="text-slate-400 font-bold text-[10px] tracking-wider uppercase shrink-0">Eye Color</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 text-right text-xs max-w-[65%] break-words">{model.physicalCharacteristics.eyeColor}</span>
                 </div>
               )}
             </div>
@@ -630,14 +720,47 @@ export const ModelDetails: React.FC = () => {
               </svg>
             </button>
 
-            <div className="flex flex-col items-center gap-3">
-              <img
-                src={model.images[activeImageIndex].url}
-                alt={`${model.basicDeatils?.fullName} Large Portfolio`}
-                className="max-h-[80vh] max-w-full rounded-lg object-contain shadow-2xl border border-slate-800/40"
-              />
-              <span className="text-xs font-semibold text-slate-400">
-                Image {activeImageIndex + 1} of {model.images.length}
+            <div className="flex flex-col items-center gap-3 w-full max-w-4xl relative">
+              <div className="relative w-full flex items-center justify-center min-h-[50vh]">
+                {!previewImageLoaded && (
+                  <div className="relative flex items-center justify-center w-full max-h-[75vh] h-[65vh] overflow-hidden rounded-lg shadow-2xl border border-slate-800/40">
+                    <img
+                      src={model.images[activeImageIndex].thumbnailUrl || model.images[activeImageIndex].url}
+                      alt="Thumbnail Preview"
+                      className="w-full h-full object-cover filter blur-sm brightness-90 scale-105"
+                    />
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center z-10">
+                      <svg className="animate-spin h-8 w-8 text-accent-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span className="text-[10px] font-bold text-slate-300 mt-2.5 tracking-widest uppercase">Loading image...</span>
+                    </div>
+                  </div>
+                )}
+                <img
+                  key={model.images[activeImageIndex].url}
+                  src={model.images[activeImageIndex].url}
+                  alt={`${model.basicDeatils?.fullName} Large Portfolio`}
+                  onLoad={() => setPreviewImageLoaded(true)}
+                  className={`max-h-[75vh] max-w-full rounded-lg object-contain shadow-2xl border border-slate-800/40 ${
+                    previewImageLoaded ? 'block' : 'hidden'
+                  }`}
+                />
+              </div>
+              <span className="text-xs font-semibold text-slate-400 flex items-center gap-3 mt-1.5">
+                <span>Image {activeImageIndex + 1} of {model.images.length}</span>
+                <span className="text-slate-700 font-normal">|</span>
+                <button
+                  type="button"
+                  onClick={() => downloadFile(model.images[activeImageIndex].url, getCleanFileName(model.images[activeImageIndex].path || model.images[activeImageIndex].url))}
+                  className="inline-flex items-center gap-1.5 text-accent-400 hover:text-accent-300 text-xs font-bold transition-colors cursor-pointer focus:outline-none"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  Download Image
+                </button>
               </span>
             </div>
 

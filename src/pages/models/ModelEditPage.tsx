@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useGetModelDetailsQuery } from '../../redux/services/models';
+import { useGetModelDetailsQuery, useRemoveModelFileMutation } from '../../redux/services/models';
 import ModelForm from './components/ModelForm';
 import Skeleton from '../../components/ui/Skeleton';
 import Button from '../../components/ui/Button';
@@ -9,6 +9,9 @@ import { useAppSelector } from '../../redux/hooks';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../../utils/errorHelper';
 import { ProfilePictureUploader } from './components/ProfilePictureUploader';
+import { MultiImageUploader } from './components/MultiImageUploader';
+import { formatFileSize, getCleanFileName } from '../../utils/helperfunction';
+import { useConfirmDelete } from '../../utils/useConfirmDelete';
 
 export const ModelEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,6 +19,16 @@ export const ModelEditPage: React.FC = () => {
   const { data: modelRes, isLoading, error, refetch } = useGetModelDetailsQuery(id || '');
   const model = modelRes?.data;
   const token = useAppSelector((state) => state.auth.token);
+  const [removeModelFile] = useRemoveModelFileMutation();
+  const { confirmDelete: confirmVideoDelete } = useConfirmDelete<any>(async (item) => {
+    if (!model) return;
+    try {
+      await removeModelFile({ id: model.id, fileId: item.id }).unwrap();
+      refetch();
+    } catch (err) {
+      toast.error('Failed to remove video');
+    }
+  });
 
   // Profile preview modal State
   const [viewProfileOpen, setViewProfileOpen] = useState(false);
@@ -139,13 +152,76 @@ export const ModelEditPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-6 text-slate-800 dark:text-slate-100 transition-colors duration-200 w-full">
-        <div className="flex flex-col gap-1">
-          <Skeleton className="h-6 w-32" />
-          <Skeleton className="h-4 w-48 mt-1" />
+      <div className="flex flex-col gap-6 text-slate-800 dark:text-slate-100 transition-colors duration-200 w-full animate-pulse">
+        {/* Header Skeleton */}
+        <div className="flex flex-col gap-3">
+          <Skeleton className="h-4 w-28" />
+          <div className="flex flex-col gap-1">
+            <Skeleton className="h-6 w-56" />
+            <Skeleton className="h-4 w-96 mt-1" />
+          </div>
         </div>
-        <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-4">
-          <Skeleton className="h-12 w-full" />
+
+        {/* Profile Header Composite Card Skeleton */}
+        <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center gap-6">
+          <Skeleton className="w-24 h-24 rounded-full shrink-0" />
+          <div className="flex-1 flex flex-col gap-3 w-full">
+            <Skeleton className="h-7 w-48" />
+            <div className="flex flex-wrap gap-2">
+              <Skeleton className="h-5 w-36 rounded-lg" />
+              <Skeleton className="h-5 w-28 rounded-lg" />
+              <Skeleton className="h-5 w-32 rounded-lg" />
+            </div>
+            <Skeleton className="h-4 w-full mt-1" />
+            
+            {/* Age, Height, Weight stat row */}
+            <div className="grid grid-cols-3 gap-3 mt-2">
+              <div className="h-14 bg-slate-100 dark:bg-navy-950 border dark:border-navy-border/40 rounded-2xl" />
+              <div className="h-14 bg-slate-100 dark:bg-navy-950 border dark:border-navy-border/40 rounded-2xl" />
+              <div className="h-14 bg-slate-100 dark:bg-navy-950 border dark:border-navy-border/40 rounded-2xl" />
+            </div>
+          </div>
+        </div>
+
+        {/* Main Columns Grid Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+          {/* Left 2 Columns: Main Form Skeleton */}
+          <div className="md:col-span-2 bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-5">
+            <Skeleton className="h-6 w-32" />
+            <div className="grid grid-cols-2 gap-4 mt-2">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="flex flex-col gap-1.5">
+                  <Skeleton className="h-3.5 w-20" />
+                  <div className="h-10 bg-slate-100 dark:bg-navy-950 border dark:border-navy-border/40 rounded-xl" />
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-col gap-1.5 mt-2">
+              <Skeleton className="h-3.5 w-20" />
+              <div className="h-24 bg-slate-100 dark:bg-navy-950 border dark:border-navy-border/40 rounded-xl" />
+            </div>
+            <div className="h-10 w-24 bg-slate-150 dark:bg-navy-950 border dark:border-navy-border/40 rounded-xl mt-2" />
+          </div>
+
+          {/* Right 1 Column: Image & Video Uploaders Skeleton */}
+          <div className="flex flex-col gap-6">
+            {/* Portfolio Gallery Uploader Skeleton */}
+            <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-4">
+              <Skeleton className="h-5 w-32" />
+              <div className="h-28 bg-slate-100 dark:bg-navy-950 border border-dashed dark:border-navy-border/40 rounded-xl" />
+              <div className="flex flex-col gap-2.5 mt-2">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-14 bg-slate-100 dark:bg-navy-950 border dark:border-navy-border/40 rounded-xl" />
+                ))}
+              </div>
+            </div>
+
+            {/* Video Presentation Skeleton */}
+            <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-4">
+              <Skeleton className="h-5 w-40" />
+              <div className="aspect-video bg-slate-100 dark:bg-navy-950 border dark:border-navy-border/40 rounded-xl" />
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -273,11 +349,12 @@ export const ModelEditPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
         {/* Left 2 Columns: Main Form */}
         <div className="md:col-span-2 bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm">
-          <ModelForm modelId={model.id} initialValues={model} onSuccess={() => navigate(`/models/${model.id}`)} />
+          <ModelForm modelId={model.id} initialValues={model} onSuccess={refetch} />
         </div>
 
-        {/* Right 1 Column: SSE Video Uploader */}
+        {/* Right 1 Column: SSE Uploaders */}
         <div className="flex flex-col gap-6">
+          <MultiImageUploader modelId={model.id} existingImages={model.images} onSuccess={refetch} />
           <div className="bg-white dark:bg-navy-card border border-slate-200 dark:border-navy-border p-6 rounded-2xl shadow-sm flex flex-col gap-4 transition-all duration-200">
             <div className="flex items-center gap-2 border-b border-slate-100 dark:border-navy-border pb-3">
               <div className="w-8 h-8 rounded-lg bg-accent-50 dark:bg-accent-950/20 text-accent-600 dark:text-accent-400 flex items-center justify-center border border-accent-100 dark:border-accent-900/30">
@@ -296,13 +373,43 @@ export const ModelEditPage: React.FC = () => {
             </p>
 
             {model.introVideo ? (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-3">
                 <div className="aspect-video w-full rounded-xl overflow-hidden bg-slate-900 border border-slate-200 dark:border-navy-border shadow-md">
-                  <video src={model.introVideo.url} controls className="w-full h-full object-contain" />
+                  <video src={model.introVideo.url} preload="none" controls className="w-full h-full object-contain" />
                 </div>
-                <span className="text-[9px] text-slate-400 dark:text-slate-505 text-center truncate italic font-medium px-2 mt-1">
-                  Active file: {model.introVideo.path?.split('/').pop() || 'pitch.mp4'}
-                </span>
+                
+                <div className="flex flex-col gap-2 text-left">
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-wider">
+                    Uploaded Video
+                  </span>
+                  <div className="flex items-center justify-between p-3 border border-slate-205/65 dark:border-navy-border rounded-xl bg-slate-50/25 dark:bg-navy-950/10">
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <div className="w-11 h-11 bg-slate-100 dark:bg-navy-950 rounded-xl border border-slate-200 dark:border-navy-border flex items-center justify-center shrink-0">
+                        <svg className="w-5 h-5 text-accent-505" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <div className="flex flex-col text-left min-w-0">
+                        <span className="text-xs font-bold text-slate-850 dark:text-slate-200 truncate">
+                          {model.introVideo?.originalName || getCleanFileName(model.introVideo?.path || model.introVideo?.url)}
+                        </span>
+                        <span className="text-[9px] text-slate-400 dark:text-slate-550 font-bold tracking-wider">
+                          {model.introVideo?.size ? formatFileSize(model.introVideo.size) : 'Cloud Asset'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => confirmVideoDelete({ id: model.introVideo?.id || '' }, model.introVideo?.originalName || getCleanFileName(model.introVideo?.path || model.introVideo?.url))}
+                      className="text-slate-455 hover:text-red-505 dark:hover:text-red-400 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="aspect-video w-full rounded-xl bg-slate-50 dark:bg-navy-950/20 border border-dashed border-slate-300 dark:border-navy-border/70 flex flex-col items-center justify-center text-center p-4">

@@ -15,6 +15,7 @@ import { RootState } from '../../redux/store';
 import { useAppAbility } from '../../context/AbilityContext';
 import Button from '../../components/ui/Button';
 import SearchDropdown from '../../components/ui/SearchDropdown';
+import MultiSelectSearchDropdown from '../../components/ui/MultiSelectSearchDropdown';
 import { DataTable } from '../../components/ui/data-table';
 import { getModelColumns } from './components/table-column/columns';
 import { Search, Plus } from 'lucide-react';
@@ -89,13 +90,26 @@ export const ModelList: React.FC = () => {
   const citiesList = useAppSelector(selectCitiesData(citiesQuery));
 
   useEffect(() => {
-    if (meta?.limit) {
-      setPagination(prev => ({
-        ...prev,
-        pageSize: meta.limit,
-      }));
+    if (meta) {
+      setPagination(prev => {
+        let newPageIndex = prev.pageIndex;
+        if (meta.totalPages > 0 && prev.pageIndex >= meta.totalPages) {
+          newPageIndex = meta.totalPages - 1;
+        } else if (meta.totalPages === 0) {
+          newPageIndex = 0;
+        }
+        
+        if (newPageIndex !== prev.pageIndex || (meta.limit && meta.limit !== prev.pageSize)) {
+          return {
+            ...prev,
+            pageIndex: newPageIndex,
+            pageSize: meta.limit || prev.pageSize,
+          };
+        }
+        return prev;
+      });
     }
-  }, [meta?.limit]);
+  }, [meta]);
 
   const handleResetFilters = () => {
     setSearch('');
@@ -199,17 +213,19 @@ export const ModelList: React.FC = () => {
             ]}
           />
 
-          <SearchDropdown
+          <MultiSelectSearchDropdown
             label="Model Type"
-            value={filters.modelType}
-            onChange={val => { setFilters(prev => ({ ...prev, modelType: val })); setPagination(p => ({ ...p, pageIndex: 0 })); }}
+            value={filters.modelType ? filters.modelType.split(',').map(s => s.trim()).filter(Boolean) : []}
+            onChange={selectedArr => {
+              setFilters(prev => ({ ...prev, modelType: selectedArr.join(',') }));
+              setPagination(p => ({ ...p, pageIndex: 0 }));
+            }}
             options={[
-              { value: '', label: 'All Model Types' },
-              { value: 'Fresher', label: 'Fresher' },
               { value: 'Experienced', label: 'Experienced' },
               { value: 'Professional', label: 'Professional' },
               { value: 'Influencer', label: 'Influencer' }
             ]}
+            placeholder="All Model Types"
           />
 
           <SearchDropdown

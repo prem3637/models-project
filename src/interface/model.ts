@@ -2,10 +2,13 @@ import { baseResponse } from "./common";
 
 export interface ImageResponse {
     id: string;
+    originalName?: string;
     url: string;
     path: string;
     size: number;
     mimeType: string;
+    thumbnailUrl?: string;
+    thumbnailStoragePath?: string;
 }
 
 export interface LocationResponse {
@@ -29,7 +32,7 @@ export interface IModel {
         age: number;
         dob?: string;
         gender: "Male" | "Female" | "Other";
-        modelType?: string;
+        modelType?: string[];
     };
     physicalCharacteristics: {
         complexion?: string;
@@ -89,7 +92,7 @@ export interface CreateModelRequest {
         age?: number;
         dob: string;
         gender: "Male" | "Female" | "Other";
-        modelType?: string;
+        modelType?: string[];
     };
     physicalCharacteristics: {
         complexion?: string;

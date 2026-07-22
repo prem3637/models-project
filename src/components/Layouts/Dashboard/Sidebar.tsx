@@ -31,11 +31,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Sidebar Header / Logo */}
       <div className="h-16 flex items-center px-4 border-b border-slate-200 dark:border-navy-border relative justify-center">
         <div className="flex items-center justify-center overflow-hidden w-full cursor-pointer" onClick={() => { navigate("/") }}>
-          {sidebarOpen ? (
-            <img src="/logo.png" alt="Pizlio Models Logo" className="h-8 object-contain dark:invert select-none" />
-          ) : (
-            <img src="/favicon.ico" alt="Pizlio Models" className="w-8 h-8 object-contain dark:invert select-none" />
-          )}
+          <img src="/logo.png" alt="Pizlio Models Logo" className="h-8 object-contain dark:invert select-none" />
         </div>
         {sidebarOpen && (
           <button

@@ -55,13 +55,15 @@ export const ModelFormSchema = z.object({
     height: z.string()
       .min(2, 'Height must be specified')
       .refine(val => isValidHeightFeetInches(val), 'Feet must be between 0-10 and Inches between 0-11'),
-    weight: z.string().min(2, 'Weight must be specified'),
-    bust: z.string().optional(),
-    waist: z.string().optional(),
-    hips: z.string().optional(),
-    shoe: z.string().optional(),
-    chest: z.string().optional(),
-    shoulder: z.string().optional(),
+    weight: z.string()
+      .min(2, 'Weight must be specified')
+      .refine(val => /^\d+(\.\d+)?$/.test(val), 'Weight must be a valid number (e.g., 60)'),
+    bust: z.string().optional().refine(val => !val || /^\d+(\.\d+)?$/.test(val), 'Bust must be a valid number (e.g., 34)'),
+    waist: z.string().optional().refine(val => !val || /^\d+(\.\d+)?$/.test(val), 'Waist must be a valid number (e.g., 28)'),
+    hips: z.string().optional().refine(val => !val || /^\d+(\.\d+)?$/.test(val), 'Hips must be a valid number (e.g., 36)'),
+    shoe: z.string().optional().refine(val => !val || /^\d+(\.\d+)?$/.test(val), 'Shoe size must be a valid number (e.g., 8)'),
+    chest: z.string().optional().refine(val => !val || /^\d+(\.\d+)?$/.test(val), 'Chest must be a valid number (e.g., 38)'),
+    shoulder: z.string().optional().refine(val => !val || /^\d+(\.\d+)?(\s*(cm|inch|in))?$/i.test(val), 'Shoulder width must be a valid number (e.g., 42)'),
     size: z.string().min(1, 'Size is required'),
   }),
   address: z.object({

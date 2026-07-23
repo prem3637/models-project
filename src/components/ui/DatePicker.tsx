@@ -204,13 +204,16 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
     // Validate segments dynamically as they type
     let err = '';
+    if (clean.length > 0 && clean.length < 8) {
+      err = 'Date must be in DD/MM/YYYY format';
+    }
     if (clean.length >= 2) {
       const day = parseInt(clean.substring(0, 2), 10);
       if (day < 1 || day > 31) {
         err = 'Invalid day (01-31)';
       }
     }
-    if (clean.length >= 4 && !err) {
+    if (clean.length >= 4 && (!err || err === 'Date must be in DD/MM/YYYY format')) {
       const day = parseInt(clean.substring(0, 2), 10);
       const month = parseInt(clean.substring(2, 4), 10);
       if (month < 1 || month > 12) {
@@ -220,10 +223,12 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         const maxDays = new Date(yearFallback, month, 0).getDate();
         if (day > maxDays) {
           err = `Invalid day for this month (max ${maxDays})`;
+        } else if (clean.length < 8) {
+          err = 'Date must be in DD/MM/YYYY format';
         }
       }
     }
-    if (clean.length === 8 && !err) {
+    if (clean.length === 8 && (!err || err === 'Date must be in DD/MM/YYYY format')) {
       const day = parseInt(clean.substring(0, 2), 10);
       const month = parseInt(clean.substring(2, 4), 10);
       const year = parseInt(clean.substring(4, 8), 10);
@@ -233,6 +238,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         const cellDate = new Date(year, month - 1, day);
         if (disableFuture && cellDate > new Date()) {
           err = 'Date cannot be in the future';
+        } else {
+          err = '';
         }
       }
     }
@@ -303,7 +310,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           onChange={handleInputChange}
           placeholder={placeholder}
           error={!!error || !!localError}
-          helperText={error || localError}
+          helperText={localError || error}
           slotProps={{
             input: {
               endAdornment: (

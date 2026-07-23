@@ -88,7 +88,7 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
           ? initialValues.basicDeatils.modelType
           : (typeof initialValues?.basicDeatils?.modelType === 'string'
             ? initialValues.basicDeatils.modelType.split(',').map((s: string) => s.trim()).filter(Boolean)
-            : ['Experienced']),
+            : ['Beginner']),
       },
       physicalCharacteristics: {
         complexion: initialValues?.physicalCharacteristics?.complexion || '',
@@ -465,7 +465,7 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
                 value={field.value || []}
                 onChange={field.onChange}
                 options={[
-                  { value: 'Experienced', label: 'Experienced' },
+                  { value: 'Beginner', label: 'Beginner' },
                   { value: 'Professional', label: 'Professional' },
                   { value: 'Influencer', label: 'Influencer' }
                 ]}
@@ -574,49 +574,77 @@ export const ModelForm: React.FC<ModelFormProps> = ({ modelId, initialValues, on
             required
             placeholder="Weight (e.g. 60)"
             error={errors.measurements?.weight?.message}
-            {...register('measurements.weight')}
+            {...register('measurements.weight', {
+              onChange: (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '');
+              }
+            })}
           />
 
           <FormInput
             label="Shoulder Width"
-            placeholder="Shoulder width (e.g. 42 cm)"
+            placeholder="Shoulder width (e.g. 42)"
             error={errors.measurements?.shoulder?.message}
-            {...register('measurements.shoulder')}
+            {...register('measurements.shoulder', {
+              onChange: (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '');
+              }
+            })}
           />
 
           <FormInput
             label="Chest"
             placeholder="e.g. 38"
             error={errors.measurements?.chest?.message}
-            {...register('measurements.chest')}
+            {...register('measurements.chest', {
+              onChange: (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '');
+              }
+            })}
           />
 
           <FormInput
             label="Bust"
             placeholder="e.g. 34"
             error={errors.measurements?.bust?.message}
-            {...register('measurements.bust')}
+            {...register('measurements.bust', {
+              onChange: (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '');
+              }
+            })}
           />
 
           <FormInput
             label="Waist"
             placeholder="e.g. 28"
             error={errors.measurements?.waist?.message}
-            {...register('measurements.waist')}
+            {...register('measurements.waist', {
+              onChange: (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '');
+              }
+            })}
           />
 
           <FormInput
             label="Hips"
             placeholder="e.g. 36"
             error={errors.measurements?.hips?.message}
-            {...register('measurements.hips')}
+            {...register('measurements.hips', {
+              onChange: (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '');
+              }
+            })}
           />
 
           <FormInput
             label="Shoe Size"
             placeholder="e.g. 8"
             error={errors.measurements?.shoe?.message}
-            {...register('measurements.shoe')}
+            {...register('measurements.shoe', {
+              onChange: (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '');
+              }
+            })}
           />
 
           <Controller

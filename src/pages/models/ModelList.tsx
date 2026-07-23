@@ -221,7 +221,7 @@ export const ModelList: React.FC = () => {
               setPagination(p => ({ ...p, pageIndex: 0 }));
             }}
             options={[
-              { value: 'Experienced', label: 'Experienced' },
+              { value: 'Beginner', label: 'Beginner' },
               { value: 'Professional', label: 'Professional' },
               { value: 'Influencer', label: 'Influencer' }
             ]}

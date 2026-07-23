@@ -371,6 +371,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
           </div>
           
           <button
+            type="button"
             onClick={() => handleClose(onCancel)}
             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200/50 dark:hover:bg-navy-950 text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-205 transition-colors cursor-pointer"
             aria-label="Close"
@@ -473,12 +474,14 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
         {/* Actions */}
         <div className="flex gap-3 py-4 px-6 bg-slate-50/45 dark:bg-navy-950/20 justify-end">
           <button
+            type="button"
             onClick={() => handleClose(onCancel)}
             className="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-205 bg-slate-100/50 hover:bg-slate-150/70 dark:bg-navy-950 dark:hover:bg-navy-900 border border-slate-200/60 dark:border-navy-border transition-all duration-200 cursor-pointer"
           >
             Cancel
           </button>
           <button
+            type="button"
             onClick={handleCropDone}
             className="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-white bg-gradient-to-r from-accent-600 to-accent-500 hover:from-accent-700 hover:to-accent-600 transition-all duration-300 shadow-md shadow-accent-500/10 hover:shadow-accent-500/25 hover:-translate-y-0.5 active:translate-y-0 active:scale-98 cursor-pointer"
           >
